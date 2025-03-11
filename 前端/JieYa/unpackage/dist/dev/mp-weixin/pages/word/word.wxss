@@ -1,0 +1,187 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.container.data-v-ce61a269 {
+  min-height: 100vh;
+  background-color: #f6f7fc;
+}
+.user.data-v-ce61a269 {
+  height: 400rpx;
+  width: 100%;
+}
+.user .header.data-v-ce61a269 {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  border-radius: 10rpx;
+}
+.user image.data-v-ce61a269 {
+  margin: 20rpx;
+  margin-right: 10rpx;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+}
+.user .text.data-v-ce61a269 {
+  margin-top: 30rpx;
+  margin-left: 30rpx;
+}
+.user .text .title.data-v-ce61a269 {
+  font-weight: 520;
+  font-size: 45rpx;
+}
+.user .text .id.data-v-ce61a269 {
+  margin-top: 10rpx;
+  font-size: 28rpx;
+  color: #666;
+}
+.user .userbox.data-v-ce61a269 {
+  margin-top: 20rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.user .userbox .myfans.data-v-ce61a269, .user .userbox .myfocus.data-v-ce61a269, .user .userbox .mygood.data-v-ce61a269 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 20%;
+}
+.user .userbox uni-icons.data-v-ce61a269 {
+  position: relative;
+  width: 150rpx;
+  left: 20rpx;
+}
+.user .introduction.data-v-ce61a269 {
+  margin: 30rpx;
+  font-size: 29rpx;
+  color: #666;
+}
+.box.data-v-ce61a269 {
+  display: flex;
+  flex-direction: column;
+  width: 96%;
+  margin-left: 20rpx;
+  background-color: #fff;
+  height: 280rpx;
+  border-radius: 20rpx;
+}
+.box .title.data-v-ce61a269 {
+  margin: 20rpx;
+  font-size: 33rpx;
+  font-weight: 500;
+  color: #333;
+}
+.box .two.data-v-ce61a269 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.box .two .book.data-v-ce61a269, .box .two .order.data-v-ce61a269 {
+  position: relative;
+  z-index: 3;
+  background-color: #fff;
+  width: 360rpx;
+  height: 220rpx;
+  border-radius: 20rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.box .two .book .text.data-v-ce61a269, .box .two .order .text.data-v-ce61a269 {
+  position: relative;
+  z-index: 3;
+  font-size: 44rpx;
+  font-weight: 550;
+}
+.box .two .book .text2.data-v-ce61a269, .box .two .order .text2.data-v-ce61a269 {
+  margin-top: 20rpx;
+  position: relative;
+  z-index: 3;
+  font-size: 25rpx;
+  font-weight: 500;
+  color: #999;
+}
+.box .two .book image.data-v-ce61a269, .box .two .order image.data-v-ce61a269 {
+  position: absolute;
+  top: -20rpx;
+  z-index: 2;
+  width: 200rpx;
+  height: 210rpx;
+}
+.box .two .book .image1.data-v-ce61a269, .box .two .order .image1.data-v-ce61a269 {
+  height: 230rpx;
+}
+.box .two .book.data-v-ce61a269 {
+  border-right: 2rpx solid #ddd;
+}
+.box .two .order.data-v-ce61a269 {
+  border-left: 2rpx solid #ddd;
+}
+.three.data-v-ce61a269 {
+  display: flex;
+  background-color: #fff;
+  height: 140rpx;
+  margin-top: 60rpx;
+  justify-content: space-between;
+}
+.three .good.data-v-ce61a269, .three .collect.data-v-ce61a269, .three .history.data-v-ce61a269, .three .focus.data-v-ce61a269 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-left: 2rpx solid #eee;
+  width: 25%;
+}
+.three .good image.data-v-ce61a269, .three .collect image.data-v-ce61a269, .three .history image.data-v-ce61a269, .three .focus image.data-v-ce61a269 {
+  width: 50rpx;
+  height: 50rpx;
+}
+.four.data-v-ce61a269 {
+  width: 96%;
+  margin-left: 20rpx;
+  background-color: #fff;
+  margin-top: 20rpx;
+  border-radius: 20rpx;
+}
+.four .note.data-v-ce61a269, .four .we.data-v-ce61a269, .four .opinion.data-v-ce61a269, .four .agreement.data-v-ce61a269 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 80rpx;
+  margin-left: 30rpx;
+  border-bottom: 1rpx solid #eee;
+}
+.bottom.data-v-ce61a269 {
+  margin-top: 30rpx;
+  margin-bottom: 50rpx;
+  color: #666;
+  font-size: 23rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

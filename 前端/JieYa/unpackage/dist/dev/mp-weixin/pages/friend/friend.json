@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "消息",
+  "usingComponents": {
+    "friend_item": "../../components/friend_item/friend_item"
+  }
+}

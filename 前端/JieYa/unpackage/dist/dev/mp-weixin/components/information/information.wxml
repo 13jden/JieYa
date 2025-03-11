@@ -1,0 +1,1 @@
+<view class="container data-v-78f7e7a5"><image src="{{a}}" mode="aspectFill" class="news-image data-v-78f7e7a5"></image><view class="box data-v-78f7e7a5"><view class="title data-v-78f7e7a5">{{b}}</view><view class="text data-v-78f7e7a5">{{c}}</view></view></view>

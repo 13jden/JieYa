@@ -33,9 +33,17 @@ function loadListsFromSession() {
 }
 function goMessage(userId) {
   console.log('跳转到消息页面，userId:', userId); // 添加日志
-  uni.navigateTo({
-    url: `/pages/message/message?userId=${userId}`
-  });
+  if(userId==0){
+	  uni.navigateTo({
+		url: `/pages/message/message?userId=${userId}`
+	  });
+  }
+  else{
+	  uni.navigateTo({
+	  		url: `/pages/friendMessage/friendMessage?userId=${userId}`
+	  });
+  }
+  
 }
 function goSystemMsg() {
 	console.log("系统");

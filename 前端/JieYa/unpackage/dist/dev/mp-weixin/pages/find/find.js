@@ -46,5 +46,5 @@ const _sfc_main = {
     };
   }
 };
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-1c765c2e"], ["__file", "C:/Users/86182/Documents/HBuilderProjects/JieYa/pages/find/find.vue"]]);
+const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-1c765c2e"], ["__file", "C:/Users/86182/Desktop/解压小程序/前端/JieYa/pages/find/find.vue"]]);
 wx.createPage(MiniProgramPage);

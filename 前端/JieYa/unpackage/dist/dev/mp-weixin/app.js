@@ -52,8 +52,17 @@ const _sfc_main = {
         message: "周末出去玩"
       }
     ];
+    const messageList_1 = [
+      { content: "你好", mymessage: 0 },
+      { content: "广志你好", mymessage: 1 }
+    ];
+    const messageList_2 = [
+      { content: "周末出去玩", mymessage: 0 }
+    ];
     common_vendor.wx$1.setStorageSync("lists", JSON.stringify(defaultLists));
     common_vendor.wx$1.setStorageSync("friendList", JSON.stringify(friendList));
+    common_vendor.wx$1.setStorageSync("messageList-1", messageList_1);
+    common_vendor.wx$1.setStorageSync("messageList-2", messageList_2);
   },
   onShow: function() {
     console.log("App Show");
@@ -62,7 +71,7 @@ const _sfc_main = {
     console.log("App Hide");
   }
 };
-const App = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__file", "C:/Users/86182/Documents/HBuilderProjects/JieYa/App.vue"]]);
+const App = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__file", "C:/Users/86182/Desktop/解压小程序/前端/JieYa/App.vue"]]);
 function createApp() {
   const app = common_vendor.createSSRApp(App);
   return {

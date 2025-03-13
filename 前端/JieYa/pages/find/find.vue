@@ -1,8 +1,10 @@
 <template>
 	<view class="title-box">
 		<view class="name">
-			解鸭吖
+			解鸭呀
 		</view>
+		<image src="../../static/logo.png" class="image1" mode="aspectFill"></image>
+		
 		<image src="/static/search.png" mode="aspectFit"></image>
 	</view>
 	
@@ -57,10 +59,15 @@ function goToNote(noteId) {
 .title-box{
 	display: flex;
 	justify-content: space-between;
+	align-items: center;
 	padding-left: 20rpx;
 	padding-right: 20rpx;
 	padding: 10rpx;
 	margin: 10rpx;
+	.image1{
+		width: 150rpx;
+		height: 150rpx;
+	}
 	image{
 		width: 45rpx;
 		height: 45rpx;

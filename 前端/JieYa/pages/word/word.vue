@@ -27,23 +27,6 @@
 			我的签名...
 		</view>
 	</view>
-	<view class="box">
-		<view class="title">
-			我的账户
-		</view>
-		<view class="two">
-			<view class="book">
-				<image class="image1" src="../../static/myOrder.png" mode="aspectFill"></image>
-				<view class="text">我的订单</view>
-				<view class="text2">道具租借情况</view>
-			</view>
-			<view class="order">
-				<image src="../../static/myBook.png" mode="aspectFill"></image>
-				<view class="text">我的预约</view>
-				<view class="text2">场地预约情况</view>
-			</view>
-		</view>
-	</view>
 	<view class="three">
 		<view class="good">	
 			<image src="../../static/mygood.png" mode="aspectFill"></image>
@@ -63,6 +46,24 @@
 		</view>
 		
 	</view>
+	<view class="box">
+		<view class="title">
+			我的账户
+		</view>
+		<view class="two">
+			<view class="book">
+				<image class="image1" src="../../static/myOrder.png" mode="aspectFill"></image>
+				<view class="text">我的订单</view>
+				<view class="text2">道具租借情况</view>
+			</view>
+			<view class="order">
+				<image src="../../static/myBook.png" mode="aspectFill"></image>
+				<view class="text">我的预约</view>
+				<view class="text2">场地预约情况</view>
+			</view>
+		</view>
+	</view>
+
 	<view class="four">
 		<view class="note">
 			<text>我的笔记</text>
@@ -161,6 +162,7 @@ onMounted(() => {
 		flex-direction: column;
 		width: 96%;
 		margin-left: 20rpx;
+		margin-top: 20rpx;
 		background-color: #fff;
 		height: 280rpx;
 		border-radius: 20rpx;
@@ -224,7 +226,7 @@ onMounted(() => {
 		display: flex;
 		background-color: #fff;
 		height: 140rpx;
-		margin-top: 60rpx;
+		margin-top: 0rpx;
 		justify-content: space-between;
 		.good,.collect,.history,.focus{
 			display: flex;
@@ -244,7 +246,7 @@ onMounted(() => {
 		width: 96%;
 		margin-left: 20rpx;
 		background-color: #fff;
-		margin-top: 20rpx;
+		margin-top: 60rpx;
 		border-radius: 20rpx;
 		.note,.we,.opinion,.agreement{
 			display: flex;

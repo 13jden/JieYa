@@ -38,9 +38,18 @@
 			        message: '周末出去玩'
 			      }
 			    ];
+				const messageList_1 = [
+				 { content: "你好", mymessage: 0 },
+				  { content: "广志你好", mymessage: 1 },
+				    ];
+				const messageList_2 = [
+				  { content: "周末出去玩", mymessage: 0 },
+				    ];
 		    // 将 lists 存入 sessionStorage
 			wx.setStorageSync('lists', JSON.stringify(defaultLists));
-			wx.setStorageSync('friendList',JSON.stringify(friendList))
+			wx.setStorageSync('friendList',JSON.stringify(friendList));
+			wx.setStorageSync('messageList-1', messageList_1);
+			wx.setStorageSync('messageList-2', messageList_2);
 		  },
 		  
 		

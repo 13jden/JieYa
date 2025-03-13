@@ -20,9 +20,15 @@ const _sfc_main = {
     }
     function goMessage(userId) {
       console.log("跳转到消息页面，userId:", userId);
-      common_vendor.index.navigateTo({
-        url: `/pages/message/message?userId=${userId}`
-      });
+      if (userId == 0) {
+        common_vendor.index.navigateTo({
+          url: `/pages/message/message?userId=${userId}`
+        });
+      } else {
+        common_vendor.index.navigateTo({
+          url: `/pages/friendMessage/friendMessage?userId=${userId}`
+        });
+      }
     }
     function goSystemMsg() {
       console.log("系统");
@@ -44,7 +50,7 @@ const _sfc_main = {
           return {
             a: common_vendor.o(($event) => goMessage(friend.userId), friend.userId),
             b: friend.userId,
-            c: "5a48eb7b-1-" + i0,
+            c: "02faf470-1-" + i0,
             d: common_vendor.p({
               username: friend.username,
               userimage: friend.avatarUrl,
@@ -57,5 +63,5 @@ const _sfc_main = {
     };
   }
 };
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__file", "C:/Users/86182/Documents/HBuilderProjects/JieYa/pages/friend/friend.vue"]]);
+const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__file", "C:/Users/86182/Desktop/解压小程序/前端/JieYa/pages/friend/friend.vue"]]);
 wx.createPage(MiniProgramPage);

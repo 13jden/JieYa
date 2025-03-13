@@ -26,10 +26,15 @@
 .title-box.data-v-1c765c2e {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding-left: 20rpx;
   padding-right: 20rpx;
   padding: 10rpx;
   margin: 10rpx;
+}
+.title-box .image1.data-v-1c765c2e {
+  width: 150rpx;
+  height: 150rpx;
 }
 .title-box image.data-v-1c765c2e {
   width: 45rpx;

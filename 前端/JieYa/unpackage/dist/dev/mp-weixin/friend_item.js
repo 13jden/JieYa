@@ -37,5 +37,5 @@ const _sfc_main = {
     };
   }
 };
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-db022675"], ["__file", "C:/Users/86182/Documents/HBuilderProjects/JieYa/components/friend_item/friend_item.vue"]]);
+const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-db022675"], ["__file", "C:/Users/86182/Desktop/解压小程序/前端/JieYa/components/friend_item/friend_item.vue"]]);
 exports.MiniProgramPage = MiniProgramPage;

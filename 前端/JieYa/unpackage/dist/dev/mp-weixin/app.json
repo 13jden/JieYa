@@ -6,12 +6,17 @@
     "components/friend_item/friend_item",
     "components/item/item",
     "pages/publish/publish",
+    "pages/note/note",
     "pages/word/word",
     "pages/friend/friend",
     "pages/find/find",
     "pages/message/message",
     "components/information/information",
-    "pages/friendMessage/friendMessage"
+    "pages/friendMessage/friendMessage",
+    "pages/prop/prop",
+    "pages/venue/venue",
+    "components/prop-item/prop-item",
+    "components/venue-item/venue-item"
   ],
   "window": {
     "navigationBarTextStyle": "black",

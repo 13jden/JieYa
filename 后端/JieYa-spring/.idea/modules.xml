@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/jieya-admin/admin.iml" filepath="$PROJECT_DIR$/jieya-admin/admin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jieya-common/common.iml" filepath="$PROJECT_DIR$/jieya-common/common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jieya.iml" filepath="$PROJECT_DIR$/jieya.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jieya-wx/wx.iml" filepath="$PROJECT_DIR$/jieya-wx/wx.iml" />
+    </modules>
+  </component>
+</project>

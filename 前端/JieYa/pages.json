@@ -42,6 +42,13 @@
 			}
 		},
 		{
+			"path" : "pages/note/note",
+			"style" : 
+			{
+				"navigationBarTitleText" : "笔记"
+			}
+		},
+		{
 			"path" : "pages/word/word",
 			"style" : 
 			{
@@ -78,6 +85,34 @@
 		},
 		{
 			"path" : "pages/friendMessage/friendMessage",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/prop/prop",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/venue/venue",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "components/prop-item/prop-item",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "components/venue-item/venue-item",
 			"style" : 
 			{
 				"navigationBarTitleText" : ""

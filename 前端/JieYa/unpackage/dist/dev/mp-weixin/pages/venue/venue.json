@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "",
+  "usingComponents": {
+    "venue-item": "../../components/venue-item/venue-item"
+  }
+}

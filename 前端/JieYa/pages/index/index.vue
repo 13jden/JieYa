@@ -7,20 +7,24 @@
 			:autoplay="true"
 			:interval="3000"
 			:duration="1000"
-			:indicator-color="'#fff'"
-			:indicator-active-color="'#666'" 
+			:indicator-color="'rgba(255, 255, 255, 0.6)'"
+			:indicator-active-color="'#ffffff'" 
 			class="swiper"
 		  >
-			<swiper-item   v-for="(image, index) in imageList" :key="index">
+			<swiper-item v-for="(banner, index) in bannerList" :key="banner.bannerId" @tap="handleBannerClick(banner)">
 				<view class="swiper-item">
-					<image :src="image.url" mode="aspectFill"></image>
+					<image :src="banner.image" mode="aspectFill"></image>
+					<view class="banner-overlay" v-if="banner.text">
+						<view class="banner-text">{{ banner.text }}</view>
+						<view class="banner-type">{{ banner.getTypeText() }}</view>
+					</view>
 				</view>
 			</swiper-item>
 		</swiper>
 	</view>
 	
 	<view class="button-box">
-		<view class="button-1">
+		<view class="button-1" @tap="navigateToProp">
 			<image src="../../static/prop.png" class="image1" mode=""></image>
 			<view class="back-text">Prop rental</view>
 			<view class="title">
@@ -31,14 +35,14 @@
 				品质保障
 			</view>
 		</view>
-		<view class="button-2">
+		<view class="button-2" @tap="navigateToVenue">
 			<image src="../../static/venue.png" mode=""></image>
 			<view class="back-text">Venue booking</view>
 			<view class="title">
 				场地预定
 			</view>
 			<view class="text">
-				便携预约
+				便捷预约
 			</view>
 		</view>
 	</view>
@@ -88,42 +92,113 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-const imageList=[
-	{url:'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/2.jpg'},
-	{url:'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/3.jpg'},
-	{url:'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/backgroundImage.jpg'}
-];
-const lists = ref([]);
+import { getBannerList } from '@/api/banner';
+import Banner from '@/models/banner';
+
+// Banner数据
+const bannerList = ref([]);
+
 // 控制弹窗显示
 const showQRCode = ref(false);
 
+// 获取Banner数据
+async function fetchBannerData() {
+	try {
+		const res = await getBannerList();
+		if (res.code === 1 && res.data) {
+			// 将API返回的数据转换为Banner模型对象
+			bannerList.value = res.data
+				.map(item => new Banner(item))
+				.sort((a, b) => a.sort - b.sort); // 按sort字段排序
+		}
+	} catch (error) {
+		console.error('获取Banner数据失败:', error);
+		// 加载失败时使用默认数据
+		bannerList.value = [
+			new Banner({
+				bannerId: 1,
+				image: 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/2.jpg',
+				type: 3,
+				on: 1,
+				text: '心理健康小贴士',
+				sort: 1
+			}),
+			new Banner({
+				bannerId: 2,
+				image: 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/3.jpg',
+				type: 2,
+				on: 1,
+				text: '心理减压道具',
+				sort: 2
+			}),
+			new Banner({
+				bannerId: 3,
+				image: 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/backgroundImage.jpg',
+				type: 1,
+				on: 1,
+				text: '舒适咨询环境',
+				sort: 3
+			})
+		];
+	}
+}
+
+// 处理Banner点击事件
+function handleBannerClick(banner) {
+	const url = banner.getJumpUrl();
+	if (url) {
+		uni.navigateTo({
+			url,
+			fail: () => {
+				uni.showToast({
+					title: '页面跳转失败',
+					icon: 'none'
+				});
+			}
+		});
+	}
+}
+
+// 页面加载时获取Banner数据
+onMounted(() => {
+	fetchBannerData();
+});
+
 // 显示二维码弹窗
 function weChatAccount() {
-  showQRCode.value = true;
+	showQRCode.value = true;
 }
 
 // 关闭弹窗
 function closeModal() {
-  console.log("dianji");
-  showQRCode.value = false;
+	console.log("dianji");
+	showQRCode.value = false;
 }
 
 function loadListsFromSession() {
-  // const storedLists = wx.getStorageSync('lists');
-  // if (storedLists) {
-  //   lists.value = JSON.parse(storedLists); // 解析存储的数据
-  // }
+	// const storedLists = wx.getStorageSync('lists');
+	// if (storedLists) {
+	//   lists.value = JSON.parse(storedLists); // 解析存储的数据
+	// }
 }
 
-// 页面加载时读取数据
-onMounted(() => {
-  loadListsFromSession();
-});
 // 跳转到笔记详情
 function goToNote(noteId) {
-  uni.navigateTo({
-    url: `/pages/note/note?id=${noteId}`,
-  });
+	uni.navigateTo({
+		url: `/pages/note/note?id=${noteId}`,
+	});
+}
+
+function navigateToProp() {
+	uni.navigateTo({
+		url: '/pages/prop/prop'
+	});
+}
+
+function navigateToVenue() {
+	uni.navigateTo({
+		url: '/pages/venue/venue'
+	});
 }
 </script>
 
@@ -137,31 +212,64 @@ function goToNote(noteId) {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	width: 100%;
+	height: 550rpx;
 }
 .swiper{
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	width: 100%;
-	height: 600rpx;
+	height: 100%;
 	border-radius: 0 0 10rpx;
 	
 	swiper-item{
+		position: relative;
+		z-index: 1;
 		width: 100%;
-		height:100%;
-		border-radius: 30rpx;
-	}
-	.swiper-item{
+		height: 100%;
+		border-radius: 16rpx;
+		.swiper-item{
+			position: relative;
+			z-index: 1;
 			width: 100%;
 			height: 100%;
-			border-radius: 30rpx;
-			image{
-				height: 100%;
-				width: 100%;
+			border-radius: 16rpx;
+		}
+		image{
+			width: 100%;
+			height: 100%;
+			border-radius: 16rpx;
+		}
+		.banner-overlay {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			padding: 20rpx;
+			background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+			border-bottom-left-radius: 16rpx;
+			border-bottom-right-radius: 16rpx;
+			
+			.banner-text {
+				font-size: 32rpx;
+				font-weight: 600;
+				color: #ffffff;
+				text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.5);
+				margin-bottom: 8rpx;
+			}
+			
+			.banner-type {
+				display: inline-block;
+				font-size: 22rpx;
+				color: #ffffff;
+				background-color: rgba(26, 115, 232, 0.8);
+				padding: 4rpx 16rpx;
+				border-radius: 20rpx;
 			}
 		}
+	}
 }
-
 
 .button-box{
 	position: relative;
@@ -228,49 +336,7 @@ function goToNote(noteId) {
 	}
 
 }
-.box2{
-	margin-top: 20rpx;
-	margin-left: 8rpx;
-	border-radius: 20rpx;
-	background-color: #fff;
-	height: 180rpx;
-	width: 98%;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	position: relative;
-	z-index: 1;
-	.button-1,.button-2,.button-3{
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		border-radius: 20rpx;
-		align-items: center;
-		border: 0.5rpx solid #eee;
-		width: 250rpx;
-		height: 100%;
-		.title{
-			position: relative;
-			z-index: 2;
-			font-size: 35rpx;
-			font-weight: 500;
-			margin-top: 130rpx;
-		}
-		image{
-			position: absolute;
-			z-index: 2;
-			width: 100rpx;
-			height: 100rpx;
-			top: 20rpx;
-			border-radius: 50%;
-		}
-	}
-	.button-2{
-		
-		
-	}
-	
-}
+
 
 .recommend{
 	font-weight: bolder;

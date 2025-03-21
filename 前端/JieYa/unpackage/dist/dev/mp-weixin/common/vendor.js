@@ -37711,6 +37711,7 @@ const onLoad = /* @__PURE__ */ createHook(ON_LOAD);
 exports._export_sfc = _export_sfc;
 exports.axios = axios;
 exports.cloudbase = cloudbase$1;
+exports.computed = computed;
 exports.createSSRApp = createSSRApp;
 exports.e = e$2;
 exports.f = f$1;

@@ -7,8 +7,8 @@
     
 
     <view class="input-box">
-	  <image src="../../static/username.png" class="image" mode="aspectFit"></image>
-      <input type="text" placeholder="用户名" v-model="username" />
+      <image src="../../static/email.png" class="image" mode="aspectFit"></image>
+      <input type="text" placeholder="邮箱" v-model="email" />
     </view>
 
     <view class="input-box">
@@ -17,8 +17,11 @@
     </view>
 
     <view class="verification-box">
-      <input class="verification" type="text" placeholder="请输入验证码" v-model="code" />
-	  <button class="code-btn" @click="getCode">{{ codeText }}</button>
+      <input class="verification" type="text" placeholder="请输入验证码" v-model="checkCode" />
+      <view class="code-image" @tap="refreshCode">
+        <image v-if="codeImage" :src="codeImage" mode="aspectFit"></image>
+        <text v-else>加载中...</text>
+      </view>
     </view>
 	
     <button class="login-btn" @click="login">登录</button>
@@ -80,22 +83,31 @@
 .verification-box {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 30rpx;
   .verification{
 	  display: flex;
 	  justify-content: flex-start;
 	  background-color: #f5f5f5;
 	  height: 90rpx;
-	  border-radius: 20rpx;
+	  width: 55%;
+	  border-radius: 10rpx;
 	  text-align: left;
 	  padding-left: 20rpx;
-	  margin-left:20rpx ;
   }
-  .code-btn {
-    background: #007aff;
-    color: white;
-    border: none;
-    padding: 10rpx 20rpx;
-    border-radius: 5rpx;
+  .code-image {
+    width: 40%;
+    height: 90rpx;
+    border-radius: 10rpx;
+    overflow: hidden;
+    background-color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    image {
+      width: 100%;
+      height: 100%;
+    }
   }
 }
 
@@ -126,32 +138,109 @@
 }
 </style>
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from 'vue';
+import { getVerificationCode, login as userLogin } from '@/api/user';
 
-const username = ref("");
-const password = ref("");
-const code = ref("");
-const codeText = ref("验证码");
+// 表单数据
+const email = ref('');
+const password = ref('');
+const checkCode = ref('');
+const checkCodeKey = ref('');
+const codeImage = ref('');
 
-const getCode = () => {
-  codeText.value = "已发送";
-  setTimeout(() => {
-    codeText.value = "验证码";
-  }, 3000);
+// 获取验证码
+const getCode = async () => {
+  try {
+    const res = await getVerificationCode();
+    if (res && res.key && res.image) {
+      checkCodeKey.value = res.key;
+      codeImage.value = res.image;
+    } else {
+      uni.showToast({
+        title: '获取验证码失败',
+        icon: 'none'
+      });
+    }
+  } catch (error) {
+    console.error('获取验证码错误:', error);
+    uni.showToast({
+      title: '获取验证码失败',
+      icon: 'none'
+    });
+  }
 };
 
-const login = () => {
-  if (!username.value || !password.value) {
-    uni.showToast({ title: "请输入用户名和密码", icon: "none" });
+// 刷新验证码
+const refreshCode = () => {
+  getCode();
+};
+
+// 登录
+const login = async () => {
+  // 表单验证
+  if (!email.value) {
+    uni.showToast({ title: '请输入邮箱', icon: 'none' });
     return;
   }
-  uni.showToast({ title: "登录成功", icon: "success" });
-  uni.navigateTo({ url: "/pages/index/index" });
+  
+  if (!password.value) {
+    uni.showToast({ title: '请输入密码', icon: 'none' });
+    return;
+  }
+  
+  if (!checkCode.value) {
+    uni.showToast({ title: '请输入验证码', icon: 'none' });
+    return;
+  }
+  
+  if (!checkCodeKey.value) {
+    uni.showToast({ title: '验证码已失效，请刷新', icon: 'none' });
+    getCode();
+    return;
+  }
+  
+  // 提交登录
+  try {
+    const res = await userLogin({
+      email: email.value,
+      password: password.value,
+      checkCodeKey: checkCodeKey.value,
+      checkCode: checkCode.value
+    });
+    
+    if (res.code === 1) {
+      uni.showToast({ 
+        title: '登录成功', 
+        icon: 'success',
+        success: () => {
+          // 延迟跳转到首页
+          setTimeout(() => {
+            uni.switchTab({ url: '/pages/index/index' });
+          }, 1500);
+        }
+      });
+    } else {
+      uni.showToast({ title: res.message || '登录失败', icon: 'none' });
+      // 刷新验证码
+      getCode();
+    }
+  } catch (error) {
+    console.error('登录错误:', error);
+    uni.showToast({ title: error.message || '登录失败', icon: 'none' });
+    // 刷新验证码
+    getCode();
+  }
 };
 
+// 跳转到注册页
 const goRegister = () => {
-  uni.navigateTo({ url: "/pages/register/register" });
+  uni.navigateTo({ url: '/pages/register/register' });
 };
+
+// 组件挂载时获取验证码
+onMounted(() => {
+  getCode();
+});
 </script>
 
 

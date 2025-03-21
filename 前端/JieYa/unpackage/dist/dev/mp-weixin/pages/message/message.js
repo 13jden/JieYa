@@ -61,7 +61,7 @@ const _sfc_main = {
         const res = await ai.bot.sendMessage({
           botId: "bot-68f2d97a",
           msg: userInput,
-          sender: "user-a"
+          sender: session_id
         });
         let aiResponse = "";
         for await (let data of res.dataStream) {

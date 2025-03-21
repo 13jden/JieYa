@@ -32,28 +32,60 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 550rpx;
 }
 .swiper.data-v-1cf27b2a {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 600rpx;
+  height: 100%;
   border-radius: 0 0 10rpx;
 }
 .swiper swiper-item.data-v-1cf27b2a {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
-  border-radius: 30rpx;
+  border-radius: 16rpx;
 }
-.swiper .swiper-item.data-v-1cf27b2a {
+.swiper swiper-item .swiper-item.data-v-1cf27b2a {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
-  border-radius: 30rpx;
+  border-radius: 16rpx;
 }
-.swiper .swiper-item image.data-v-1cf27b2a {
-  height: 100%;
+.swiper swiper-item image.data-v-1cf27b2a {
   width: 100%;
+  height: 100%;
+  border-radius: 16rpx;
+}
+.swiper swiper-item .banner-overlay.data-v-1cf27b2a {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
+  border-bottom-left-radius: 16rpx;
+  border-bottom-right-radius: 16rpx;
+}
+.swiper swiper-item .banner-overlay .banner-text.data-v-1cf27b2a {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.5);
+  margin-bottom: 8rpx;
+}
+.swiper swiper-item .banner-overlay .banner-type.data-v-1cf27b2a {
+  display: inline-block;
+  font-size: 22rpx;
+  color: #ffffff;
+  background-color: rgba(26, 115, 232, 0.8);
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
 }
 .button-box.data-v-1cf27b2a {
   position: relative;
@@ -118,44 +150,6 @@
   background-color: #fff;
   border-left: 2rpx solid #ddd;
   margin-left: 0rpx;
-}
-.box2.data-v-1cf27b2a {
-  margin-top: 20rpx;
-  margin-left: 8rpx;
-  border-radius: 20rpx;
-  background-color: #fff;
-  height: 180rpx;
-  width: 98%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-}
-.box2 .button-1.data-v-1cf27b2a, .box2 .button-2.data-v-1cf27b2a, .box2 .button-3.data-v-1cf27b2a {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  border-radius: 20rpx;
-  align-items: center;
-  border: 0.5rpx solid #eee;
-  width: 250rpx;
-  height: 100%;
-}
-.box2 .button-1 .title.data-v-1cf27b2a, .box2 .button-2 .title.data-v-1cf27b2a, .box2 .button-3 .title.data-v-1cf27b2a {
-  position: relative;
-  z-index: 2;
-  font-size: 35rpx;
-  font-weight: 500;
-  margin-top: 130rpx;
-}
-.box2 .button-1 image.data-v-1cf27b2a, .box2 .button-2 image.data-v-1cf27b2a, .box2 .button-3 image.data-v-1cf27b2a {
-  position: absolute;
-  z-index: 2;
-  width: 100rpx;
-  height: 100rpx;
-  top: 20rpx;
-  border-radius: 50%;
 }
 .recommend.data-v-1cf27b2a {
   font-weight: bolder;

@@ -257,6 +257,7 @@ onMounted(() => {
 			border-bottom: 1rpx solid #eee;
 		}
 	}
+	
 	.bottom{
 		margin-top: 30rpx;
 		margin-bottom: 50rpx;

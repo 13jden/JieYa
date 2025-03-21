@@ -12,6 +12,8 @@ const _sfc_main = {
   __name: "find",
   setup(__props) {
     const lists = common_vendor.ref([]);
+    const categories = common_vendor.ref(["全部", "开心", "难过", "焦虑", "兴奋", "平静", "孤独", "感恩"]);
+    const activeCategory = common_vendor.ref(0);
     function loadListsFromSession() {
       const storedLists = common_vendor.wx$1.getStorageSync("lists");
       if (storedLists) {
@@ -26,9 +28,21 @@ const _sfc_main = {
         url: `/pages/note/note?id=${noteId}`
       });
     }
+    function selectCategory(index) {
+      activeCategory.value = index;
+      console.log("选择分类:", categories.value[index]);
+    }
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: common_vendor.f(lists.value, (list, index, i0) => {
+        a: common_vendor.f(categories.value, (category, index, i0) => {
+          return {
+            a: common_vendor.t(category),
+            b: index,
+            c: activeCategory.value === index ? 1 : "",
+            d: common_vendor.o(($event) => selectCategory(index), index)
+          };
+        }),
+        b: common_vendor.f(lists.value, (list, index, i0) => {
           return {
             a: "1c765c2e-0-" + i0,
             b: common_vendor.p({
@@ -41,7 +55,7 @@ const _sfc_main = {
             d: common_vendor.o(($event) => goToNote(list.nid), index)
           };
         }),
-        b: _ctx.noMoreData
+        c: _ctx.noMoreData
       }, _ctx.noMoreData ? {} : {});
     };
   }

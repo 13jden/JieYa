@@ -8,12 +8,17 @@ if (!Math) {
   "./components/friend_item/friend_item.js";
   "./components/item/item.js";
   "./pages/publish/publish.js";
+  "./pages/note/note.js";
   "./pages/word/word.js";
   "./pages/friend/friend.js";
   "./pages/find/find.js";
   "./pages/message/message.js";
   "./components/information/information.js";
   "./pages/friendMessage/friendMessage.js";
+  "./pages/prop/prop.js";
+  "./pages/venue/venue.js";
+  "./components/prop-item/prop-item.js";
+  "./components/venue-item/venue-item.js";
 }
 const _sfc_main = {
   onLaunch() {

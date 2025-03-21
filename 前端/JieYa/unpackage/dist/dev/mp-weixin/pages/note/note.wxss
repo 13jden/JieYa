@@ -1,0 +1,212 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.note-container.data-v-f9d84dbe {
+  min-height: 100vh;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+.swiper.data-v-f9d84dbe {
+  height: 500rpx;
+  width: 100%;
+}
+.swiper-image.data-v-f9d84dbe {
+  width: 100%;
+  height: 100%;
+}
+.note-content.data-v-f9d84dbe {
+  padding: 30rpx;
+}
+.note-title.data-v-f9d84dbe {
+  font-size: 40rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+  color: #333;
+}
+.note-text.data-v-f9d84dbe {
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 30rpx;
+  white-space: pre-wrap;
+}
+.tags-container.data-v-f9d84dbe {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 20rpx 0;
+}
+.tag-item.data-v-f9d84dbe {
+  background-color: #e3f2fd;
+  color: #1a73e8;
+  padding: 6rpx 20rpx;
+  border-radius: 30rpx;
+  font-size: 24rpx;
+  margin-right: 16rpx;
+  margin-bottom: 16rpx;
+}
+.visibility-indicator.data-v-f9d84dbe {
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 20rpx;
+}
+.visibility-indicator .visibility-icon.data-v-f9d84dbe {
+  margin-right: 10rpx;
+}
+.comments-section.data-v-f9d84dbe {
+  margin-top: 40rpx;
+  padding: 0 30rpx 120rpx;
+}
+.section-title.data-v-f9d84dbe {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 30rpx;
+  color: #333;
+  position: relative;
+  padding-left: 20rpx;
+}
+.section-title.data-v-f9d84dbe::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6rpx;
+  height: 30rpx;
+  width: 6rpx;
+  background-color: #1a73e8;
+  border-radius: 3rpx;
+}
+.comment-item.data-v-f9d84dbe {
+  margin-bottom: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  padding-bottom: 20rpx;
+}
+.parent-comment.data-v-f9d84dbe, .child-comment.data-v-f9d84dbe {
+  display: flex;
+  margin-bottom: 20rpx;
+}
+.child-comments.data-v-f9d84dbe {
+  margin-left: 80rpx;
+  background-color: #f9f9f9;
+  border-radius: 12rpx;
+  padding: 20rpx;
+}
+.comment-avatar.data-v-f9d84dbe {
+  width: 70rpx;
+  height: 70rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+}
+.comment-avatar.small.data-v-f9d84dbe {
+  width: 50rpx;
+  height: 50rpx;
+}
+.comment-content.data-v-f9d84dbe {
+  flex: 1;
+}
+.comment-header.data-v-f9d84dbe {
+  margin-bottom: 10rpx;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.comment-username.data-v-f9d84dbe {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #333;
+  margin-right: 10rpx;
+}
+.reply-to.data-v-f9d84dbe {
+  font-size: 24rpx;
+  color: #999;
+  margin: 0 10rpx;
+}
+.comment-time.data-v-f9d84dbe {
+  font-size: 22rpx;
+  color: #999;
+  margin-left: auto;
+}
+.comment-text.data-v-f9d84dbe {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+.comment-actions.data-v-f9d84dbe {
+  margin-top: 10rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+.action-btn.data-v-f9d84dbe {
+  font-size: 24rpx;
+  color: #1a73e8;
+  margin-left: 20rpx;
+}
+.comment-input-container.data-v-f9d84dbe {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 30rpx;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+.comment-input.data-v-f9d84dbe {
+  flex: 1;
+  height: 70rpx;
+  background-color: #f5f5f5;
+  border-radius: 35rpx;
+  padding: 0 30rpx;
+  font-size: 26rpx;
+}
+.send-btn.data-v-f9d84dbe {
+  margin-left: 20rpx;
+  background-color: #1a73e8;
+  color: white;
+  font-size: 26rpx;
+  padding: 10rpx 30rpx;
+  border-radius: 35rpx;
+  height: 70rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.send-btn.data-v-f9d84dbe:disabled {
+  background-color: #ccc;
+}
+.preview-mode-indicator.data-v-f9d84dbe {
+  position: fixed;
+  right: 30rpx;
+  top: 30rpx;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10rpx 20rpx;
+  border-radius: 30rpx;
+  font-size: 24rpx;
+  z-index: 100;
+}

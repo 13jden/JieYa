@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128px" height="128px" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g id="logo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle id="background" fill="#409EFF" cx="64" cy="64" r="64"/>
+        <text id="JY" font-family="Arial-BoldMT, Arial" font-size="64" font-weight="bold" fill="#FFFFFF">
+            <tspan x="24" y="86">JY</tspan>
+        </text>
+    </g>
+</svg> 

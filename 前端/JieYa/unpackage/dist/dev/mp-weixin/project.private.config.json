@@ -8,6 +8,27 @@
     "miniprogram": {
       "list": [
         {
+          "name": "pages/login/login",
+          "pathName": "pages/login/login",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/index/index",
+          "pathName": "pages/index/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/note/note",
+          "pathName": "pages/note/note",
+          "query": "mode=preview",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
           "name": "pages/message/message",
           "pathName": "pages/message/message",
           "query": "",

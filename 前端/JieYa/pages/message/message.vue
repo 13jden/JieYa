@@ -47,6 +47,7 @@ const messageContainer = ref(null);
 const isLoadingHistory = ref(false);
 const myavatar = ref("https://jiayaya.oss-cn-hangzhou.aliyuncs.com/2.jpg"); // 当前用户头像
 const favatar = ref("https://jiayaya.oss-cn-hangzhou.aliyuncs.com/3.jpg"); // 对方用户头像
+
 const messagelist = ref([
   { content: "欢迎使用心理咨询顾问。我可以为您提供心理咨询、情感支持和心理辅导等服务。请告诉我您的问题和困惑，我会尽可能为您提供专业、温暖的建议和帮助。", mymessage: 0 }, 
 ]);
@@ -120,7 +121,7 @@ const send = async () => {
     const res = await ai.bot.sendMessage({
       botId: "bot-68f2d97a",
       msg: userInput,
-	  sender:"user-a"
+	  sender:session_id
     });
 	
     let aiResponse = "";

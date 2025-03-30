@@ -30,21 +30,21 @@ public class JwtInterceptor implements HandlerInterceptor {
 
         // 从请求头获取token
         String token = request.getHeader("Authorization");
-        
+
         // 如果请求头中没有，尝试从请求参数获取
         if (StringUtils.isEmpty(token)) {
             token = request.getParameter("token");
         }
-        
+
         if (StringUtils.isEmpty(token)) {
             throw new RuntimeException("未登录，请先登录");
         }
-
+        System.out.println(token);
         // 验证JWT token是否有效
         if (!JwtUtil.validateToken(token)) {
             throw new RuntimeException("token无效");
         }
-        
+
         // 从Redis获取用户信息
         TokenUserInfoDto userInfo = redisComponent.getTokenInfo(token);
         if (userInfo == null) {
@@ -63,7 +63,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 
         // 将用户信息存入request属性中，方便后续使用
         request.setAttribute("userInfo", userInfo);
-        
+
         return true;
     }
 } 

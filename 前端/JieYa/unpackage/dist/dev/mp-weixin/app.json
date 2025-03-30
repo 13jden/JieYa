@@ -16,7 +16,14 @@
     "pages/prop/prop",
     "pages/venue/venue",
     "components/prop-item/prop-item",
-    "components/venue-item/venue-item"
+    "components/venue-item/venue-item",
+    "pages/updateMe/updateMe",
+    "pages/prop_detail/prop_detail",
+    "pages/venue_detail/venue_detail",
+    "pages/detail_comment/detail_comment",
+    "pages/order/order",
+    "pages/prop_rental/prop_rental",
+    "pages/venue_rental/venue_rental"
   ],
   "window": {
     "navigationBarTextStyle": "black",

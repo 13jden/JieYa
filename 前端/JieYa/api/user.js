@@ -33,7 +33,10 @@ export function register(data) {
   return request({
     url: '/user/register',
     method: 'POST',
-    data
+    header: {
+      'content-type': 'application/x-www-form-urlencoded'
+    },
+    data: data
   });
 }
 
@@ -46,12 +49,15 @@ export function login(data) {
   return request({
     url: '/user/login',
     method: 'POST',
-    data
+    header: {
+      'content-type': 'application/x-www-form-urlencoded'
+    },
+    data: data
   }).then(res => {
     if (res.code === 1 && res.data) {
       // 登录成功，保存token到storage
-      wx.setStorageSync('token', res.data.token);
-      wx.setStorageSync('userInfo', res.data);
+      uni.setStorageSync('token', res.data.token);
+      uni.setStorageSync('userInfo', res.data);
     }
     return res;
   });
@@ -92,4 +98,86 @@ export function logout() {
     wx.removeStorageSync('userInfo');
     return res;
   });
+}
+
+/**
+ * 更新用户信息
+ * @param {Object} data 用户信息
+ * @param {Object} avatarFile 头像文件对象（可选）
+ * @returns {Promise} 更新结果
+ */
+export function updateUserInfo(data, avatarFile) {
+  // 如果有头像文件
+  if (avatarFile && avatarFile.path) {
+    return request({
+      url: '/user/update',
+      method: 'POST',
+      filePath: avatarFile.path,
+      name: 'avatar',
+      formData: data // 其他数据作为formData发送
+    }).then(res => {
+      if (res.code === 1) {
+        // 更新成功后，更新本地存储的用户信息
+        updateLocalUserInfo(data, res.data);
+      }
+      return res;
+    });
+  } 
+  // 没有头像文件，走普通请求
+  else {
+    return request({
+      url: '/user/update',
+      method: 'POST',
+      header: {
+        'content-type': 'application/x-www-form-urlencoded'
+      },
+      data: data
+    }).then(res => {
+      if (res.code === 1) {
+        // 更新成功后，更新本地存储的用户信息
+        updateLocalUserInfo(data, res.data);
+      }
+      return res;
+    });
+  }
+}
+
+/**
+ * 更新本地存储的用户信息
+ * @param {Object} updatedData 更新的数据
+ * @param {Object} responseData 服务器返回的数据
+ */
+function updateLocalUserInfo(updatedData, responseData) {
+  try {
+    // 获取当前存储的用户信息
+    const userInfo = uni.getStorageSync('userInfo') || {};
+    
+    // 创建更新后的用户信息对象
+    const updatedUserInfo = {
+      ...userInfo, // 保留原有信息
+      ...updatedData // 添加更新的字段
+    };
+    
+    // 如果服务器返回了新数据，优先使用服务器数据
+    if (responseData) {
+      // 如果返回了新的头像地址
+      if (responseData.avatar) {
+        updatedUserInfo.avatar = responseData.avatar;
+      }
+      
+      // 如果有其他字段，也一并更新
+      if (responseData.nickName) updatedUserInfo.nickName = responseData.nickName;
+      if (responseData.sex !== undefined) updatedUserInfo.sex = responseData.sex;
+      if (responseData.birthday) updatedUserInfo.birthday = responseData.birthday;
+      if (responseData.school) updatedUserInfo.school = responseData.school;
+      if (responseData.personIntruduction) updatedUserInfo.personIntruduction = responseData.personIntruduction;
+    }
+    
+    // 将更新后的用户信息保存回本地存储
+    uni.setStorageSync('userInfo', updatedUserInfo);
+    
+    console.log('本地用户信息已更新:', updatedUserInfo);
+  } catch (error) {
+    console.error('更新本地用户信息失败:', error);
+  }
 } 

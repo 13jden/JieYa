@@ -11,28 +11,62 @@ if (!Math) {
 const _sfc_main = {
   __name: "word",
   setup(__props) {
-    common_vendor.ref([]);
+    const userInfo = common_vendor.ref({});
     common_vendor.onMounted(() => {
+      const storedUserInfo = common_vendor.index.getStorageSync("userInfo");
+      if (storedUserInfo) {
+        userInfo.value = storedUserInfo;
+      }
     });
+    const goToUpdateMe = () => {
+      common_vendor.index.navigateTo({
+        url: "/pages/updateMe/updateMe"
+      });
+    };
     return (_ctx, _cache) => {
-      return {
-        a: common_vendor.p({
+      return common_vendor.e({
+        a: userInfo.value.avatar || "https://jiayaya.oss-cn-hangzhou.aliyuncs.com/avatar.jpg",
+        b: common_vendor.t(userInfo.value.nickName || "未设置昵称"),
+        c: common_vendor.t(userInfo.value.userId || "未登录"),
+        d: common_vendor.o(goToUpdateMe),
+        e: common_vendor.p({
           type: "settings",
           size: "50rpx"
         }),
-        b: common_vendor.p({
+        f: common_vendor.t(userInfo.value.personIntruduction || "我的签名..."),
+        g: userInfo.value.sex !== void 0 || userInfo.value.school
+      }, userInfo.value.sex !== void 0 || userInfo.value.school ? common_vendor.e({
+        h: userInfo.value.sex !== void 0
+      }, userInfo.value.sex !== void 0 ? {
+        i: common_vendor.p({
+          type: "person",
+          size: "30rpx",
+          color: "#666"
+        }),
+        j: common_vendor.t(userInfo.value.sex ? "男" : "女")
+      } : {}, {
+        k: userInfo.value.school
+      }, userInfo.value.school ? {
+        l: common_vendor.p({
+          type: "school",
+          size: "30rpx",
+          color: "#666"
+        }),
+        m: common_vendor.t(userInfo.value.school)
+      } : {}) : {}, {
+        n: common_vendor.p({
           type: "right"
         }),
-        c: common_vendor.p({
+        o: common_vendor.p({
           type: "right"
         }),
-        d: common_vendor.p({
+        p: common_vendor.p({
           type: "right"
         }),
-        e: common_vendor.p({
+        q: common_vendor.p({
           type: "right"
         })
-      };
+      });
     };
   }
 };

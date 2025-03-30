@@ -2,10 +2,10 @@
 <view class="container">
 	<view class="user">
 		<view class="header">
-			<image src="https://jiayaya.oss-cn-hangzhou.aliyuncs.com/avatar.jpg" mode="aspectFill"></image>
+			<image :src="userInfo.avatar || 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/avatar.jpg'" mode="aspectFill"></image>
 			<view class="text">
-				<view class="title">登登</view>
-				<view class="id">id号:12345678</view>	
+				<view class="title">{{ userInfo.nickName || '未设置昵称' }}</view>
+				<view class="id">id号: {{ userInfo.userId || '未登录' }}</view>	
 			</view>
 		</view>
 		<view class="userbox">
@@ -21,10 +21,22 @@
 			  <text class="number">88</text>
 			  <text class="label">关注</text>
 			</view>
-			<uni-icons type="settings" size="50rpx"></uni-icons>
+			<uni-icons type="settings" size="50rpx" @click="goToUpdateMe"></uni-icons>
 		</view>
 		<view class="introduction">
-			我的签名...
+			{{ userInfo.personIntruduction || '我的签名...' }}
+		</view>
+		
+		<!-- 性别和学校信息（仅当不为空时显示） -->
+		<view class="user-info" v-if="userInfo.sex !== undefined || userInfo.school">
+			<view class="info-item" v-if="userInfo.sex !== undefined">
+				<uni-icons type="person" size="30rpx" color="#666"></uni-icons>
+				<text>{{ userInfo.sex ? '男' : '女' }}</text>
+			</view>
+			<view class="info-item" v-if="userInfo.school">
+				<uni-icons type="school" size="30rpx" color="#666"></uni-icons>
+				<text>{{ userInfo.school }}</text>
+			</view>
 		</view>
 	</view>
 	<view class="three">
@@ -92,10 +104,22 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 
-const lists = ref([]);
+const userInfo = ref({});
 
 onMounted(() => {
+	// 从存储中获取用户信息
+	const storedUserInfo = uni.getStorageSync('userInfo');
+	if (storedUserInfo) {
+		userInfo.value = storedUserInfo;
+	}
 });
+
+// 如果需要添加编辑个人资料的跳转功能
+const goToUpdateMe = () => {
+	uni.navigateTo({
+		url: '/pages/updateMe/updateMe'
+	});
+};
 </script>
 
 <style lang="scss" scoped>
@@ -104,8 +128,9 @@ onMounted(() => {
 		background-color: #f6f7fc;
 	}
 	.user{
-		height: 400rpx;
+		height: auto;
 		width: 100%;
+		padding-bottom: 0rpx;
 		.header{
 			display: flex;
 			justify-content: flex-start;
@@ -155,6 +180,32 @@ onMounted(() => {
 			margin: 30rpx;
 			font-size: 29rpx;
 			color: #666;
+		}
+		
+		/* 性别和学校信息样式 */
+		.user-info {
+			margin: 0 30rpx 30rpx;
+			display: flex;
+			flex-wrap: wrap;
+			
+			.info-item {
+				display: flex;
+				align-items: center;
+				margin-right: 30rpx;
+				background-color: #f0f0f0;
+				padding: 6rpx 16rpx;
+				border-radius: 30rpx;
+				margin-bottom: 10rpx;
+				
+				uni-icons {
+					margin-right: 8rpx;
+				}
+				
+				text {
+					font-size: 26rpx;
+					color: #666;
+				}
+			}
 		}
 	}
 	.box{
@@ -223,10 +274,10 @@ onMounted(() => {
 		}
 	}
 	.three{
+		margin-top: 30rpx;
 		display: flex;
 		background-color: #fff;
 		height: 140rpx;
-		margin-top: 0rpx;
 		justify-content: space-between;
 		.good,.collect,.history,.focus{
 			display: flex;

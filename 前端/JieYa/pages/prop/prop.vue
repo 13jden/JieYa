@@ -41,128 +41,158 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import PropItem from '../../components/prop-item/prop-item.vue';
+import { getPropList, searchProp, getAvailableProps } from '../../api/prop.js';
 
-// 模拟数据
-const propList = ref([
-	{
-		id: 1,
-		name: '情绪卡片',
-		description: '帮助识别和表达情绪的卡片组，包含30种基本情绪',
-		price: 15,
-		available: true,
-		image: 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/2.jpg'
-	},
-	{
-		id: 2,
-		name: '心理沙盘',
-		description: '用于沙盘游戏治疗的专业工具，适合儿童心理疏导',
-		price: 88,
-		available: true,
-		image: 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/3.jpg'
-	},
-	{
-		id: 3,
-		name: '减压玩具套装',
-		description: '包含多种减压球、魔方等，帮助缓解焦虑和压力',
-		price: 35,
-		available: false,
-		image: 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/backgroundImage.jpg'
-	},
-	{
-		id: 4,
-		name: '心理测评工具',
-		description: '专业心理测评工具，包含多种量表和评估材料',
-		price: 120,
-		available: true,
-		image: 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/2.jpg'
-	},
-	{
-		id: 5,
-		name: '绘画治疗套装',
-		description: '专业绘画治疗工具，包含画笔、颜料和特殊纸张',
-		price: 68,
-		available: true,
-		image: 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/3.jpg'
-	}
-]);
-
+// 保留基本 ref 变量
 const searchText = ref('');
-const filters = ref(['全部', '可租借', '价格↑', '价格↓']);
+const filters = ref(['全部', '可租借', '不可租借']);
 const activeFilter = ref(0);
 const loading = ref(false);
 const noMoreData = ref(false);
+const propList = ref([]);
+const showOnlyAvailable = ref(false);
 
-// 根据筛选条件过滤道具
+// 这个计算属性用于显示道具列表
 const filteredProps = computed(() => {
-	let result = propList.value;
-	
-	// 搜索过滤
-	if (searchText.value) {
-		result = result.filter(item => 
-			item.name.includes(searchText.value) || 
-			item.description.includes(searchText.value)
-		);
-	}
-	
-	// 筛选条件过滤
-	switch(activeFilter.value) {
-		case 1: // 可租借
-			result = result.filter(item => item.available);
-			break;
-		case 2: // 价格↑
-			result = [...result].sort((a, b) => a.price - b.price);
-			break;
-		case 3: // 价格↓
-			result = [...result].sort((a, b) => b.price - a.price);
-			break;
-	}
-	
-	return result;
+	return propList.value;
 });
+
+// 监听搜索文本变化
+watch(searchText, (newVal) => {
+	if (newVal.trim() === '') {
+		// 如果搜索文本为空，重新加载所有道具
+		resetSearch();
+	}
+});
+
+// 重置搜索并加载所有道具
+const resetSearch = () => {
+	propList.value = []; // 清空现有数据
+	noMoreData.value = false;
+	fetchPropList();
+};
+
+// 加载道具列表 - 根据可租借状态过滤
+const fetchPropList = async () => {
+	if (loading.value) return;
+	
+	loading.value = true;
+	propList.value = []; // 清空现有数据
+	
+	try {
+		let result;
+		
+		if (activeFilter.value === 1) {
+			// 获取可租借道具
+			result = await getAvailableProps();
+		} else if (activeFilter.value === 2) {
+			// 获取不可租借道具
+			result = await getPropList({
+				available: false
+			});
+		} else {
+			// 获取所有道具
+			result = await getPropList();
+		}
+		
+		console.log('API返回道具数据:', result);
+		
+		// 检查返回的数据是否有效
+		if (result.code === 1 && result.data && result.data.length > 0) {
+			// 直接使用返回的数据
+			propList.value = result.data;
+			console.log('道具列表:', propList.value);
+		} else {
+			// 没有数据时显示空列表
+			propList.value = [];
+		}
+	} catch (error) {
+		console.error('获取道具列表失败:', error);
+		uni.showToast({
+			title: '获取道具列表失败',
+			icon: 'none'
+		});
+	} finally {
+		loading.value = false;
+	}
+};
+
+// 搜索道具 - 简化搜索逻辑
+const handleSearch = async () => {
+	if (!searchText.value.trim()) {
+		// 如果搜索框为空，则显示所有道具
+		fetchPropList();
+		return;
+	}
+	
+	loading.value = true;
+	propList.value = []; // 清空现有数据
+	
+	try {
+		const result = await searchProp(searchText.value);
+		
+		if (result.code === 1 && result.data && result.data.length > 0) {
+			propList.value = result.data;
+		} else {
+			propList.value = []; // 搜索无结果时显示空列表
+			uni.showToast({
+				title: '没有找到相关道具',
+				icon: 'none'
+			});
+		}
+	} catch (error) {
+		console.error('搜索道具失败:', error);
+		uni.showToast({
+			title: '搜索道具失败',
+			icon: 'none'
+		});
+	} finally {
+		loading.value = false;
+	}
+};
+
+// 切换只显示可用道具
+const toggleAvailableOnly = () => {
+	showOnlyAvailable.value = !showOnlyAvailable.value;
+	fetchPropList(); // 重新加载数据
+};
 
 // 设置筛选条件
 function setFilter(index) {
+	if (activeFilter.value === index) return;
+	
 	activeFilter.value = index;
-}
-
-// 加载更多
-function loadMore() {
-	if (noMoreData.value) return;
-	
-	loading.value = true;
-	
-	// 模拟加载更多数据
-	setTimeout(() => {
-		loading.value = false;
-		noMoreData.value = true; // 示例中设置没有更多数据
-	}, 1000);
+	fetchPropList(); // 重新加载数据
 }
 
 // 点击道具
 function onPropClick(id) {
 	console.log('点击道具:', id);
-	uni.showToast({
-		title: '功能开发中',
-		icon: 'none'
+	uni.navigateTo({
+		url: `/pages/prop_detail/prop_detail?id=${id}`
 	});
+}
+
+// 清除搜索内容
+function clearSearch() {
+	searchText.value = '';
+	fetchPropList();
 }
 
 // 导航到我的租借
 function navigateToMyRentals() {
-	uni.showToast({
-		title: '我的租借功能开发中',
-		icon: 'none'
+	uni.navigateTo({
+		url: '/pages/order/order?activeTab=prop'
 	});
 }
 
-// 导航到首页
-function navigateToHome() {
-	uni.switchTab({
-		url: '/pages/index/index'
-	});
-}
+// 初始加载数据
+onMounted(() => {
+	fetchPropList();
+});
+
 </script>
 
 <style lang="scss" scoped>

@@ -1,6 +1,6 @@
 <template>
 	<view class="venue-item" @tap="onItemClick">
-		<image class="venue-image" :src="venueData.image" mode="aspectFill"></image>
+		<image :src="venueData.coverImage" mode="aspectFill" class="venue-image"></image>
 		<view class="venue-overlay">
 			<view class="venue-name">{{ venueData.name }}</view>
 			<view class="venue-location">

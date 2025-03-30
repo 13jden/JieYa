@@ -37707,6 +37707,7 @@ try {
 const createHook = (lifecycle) => (hook2, target = getCurrentInstance()) => {
   !isInSSRComponentSetup && injectHook(lifecycle, hook2, target);
 };
+const onShow = /* @__PURE__ */ createHook(ON_SHOW);
 const onLoad = /* @__PURE__ */ createHook(ON_LOAD);
 exports._export_sfc = _export_sfc;
 exports.axios = axios;
@@ -37722,7 +37723,9 @@ exports.nextTick$1 = nextTick$1;
 exports.o = o$1;
 exports.onLoad = onLoad;
 exports.onMounted = onMounted;
+exports.onShow = onShow;
 exports.p = p$1;
+exports.reactive = reactive;
 exports.ref = ref;
 exports.resolveComponent = resolveComponent;
 exports.s = s$1;

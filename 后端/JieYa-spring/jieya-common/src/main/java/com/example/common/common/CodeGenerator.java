@@ -37,7 +37,6 @@
 //
 //
 //
-//
 //    public static void main(String[] args) {
 //        // 代码生成器
 //        AutoGenerator mpg = new AutoGenerator();
@@ -46,8 +45,8 @@
 //        GlobalConfig gc = new GlobalConfig();
 //        String projectPath = System.getProperty("user.dir");
 //        System.out.println(projectPath);
-//        gc.setOutputDir(projectPath + "/JieYa-admin/src/main/java/");//设置代码生成路径
-//        String outputDir = projectPath + "/JieYa-admin/src/main/java/";
+//        gc.setOutputDir(projectPath + "/JieYa-wx/src/main/java/");//设置代码生成路径
+//        String outputDir = projectPath + "/JieYa-wx/src/main/java/";
 //        gc.setFileOverride(true);//是否覆盖以前文件
 //        gc.setOpen(false);//是否打开生成目录
 //        gc.setAuthor("dzk");//设置项目作者名称
@@ -68,7 +67,7 @@
 //
 //        // 包配置
 //        PackageConfig pc = new PackageConfig();
-//        pc.setParent("com.example.admin");
+//        pc.setParent("com.example.wx");
 //        pc.setMapper("mapper");
 //        pc.setXml("mapper.xml");
 //        pc.setEntity("pojo");

@@ -43,6 +43,9 @@ public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> impleme
     @Value("${upload.bannerFilePath}")
     private String filePath;
 
+    @Value("${host.url}")
+    private String hostUrl;
+
     /**
      * 获取Banner列表，按sort排序
      * @return Banner列表
@@ -80,7 +83,7 @@ public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> impleme
                     // 检查URL是否已经包含基础路径
                     if (!imageUrl.startsWith("http://")) {
                         // 使用正确的映射路径
-                        String baseUrl = "http://localhost:8082/images/official/";
+                            String baseUrl = hostUrl + "/images/official/";
                         banner.setImage(baseUrl + imageUrl);
                     }
                 }

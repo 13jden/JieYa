@@ -48,82 +48,115 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElForm } from 'element-plus'
 import { getCheckCode, login } from '@/api/admin'
+import { inject } from 'vue'
 
-export default {
-  name: 'Login',
-  data() {
-    return {
-      loginForm: {
-        account: '',
-        password: '',
-        checkCode: '',
-        checkCodeKey: ''
-      },
-      loginRules: {
-        account: [{ required: true, message: '请输入账号', trigger: 'blur' }],
-        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-        checkCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
-      },
-      loading: false,
-      checkCodeImg: ''
+// 获取依赖
+const router = useRouter()
+const websocket = inject('websocket')
+
+// 表单引用
+const loginFormRef = ref(null)
+
+// 响应式数据
+const loading = ref(false)
+const checkCodeImg = ref('')
+
+const loginForm = reactive({
+  account: '',
+  password: '',
+  checkCode: '',
+  checkCodeKey: ''
+})
+
+const loginRules = {
+  account: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  checkCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
+}
+
+// 获取Cookie工具函数
+function getCookie(name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+  return null
+}
+
+// 刷新验证码
+async function refreshCheckCode() {
+  try {
+    const res = await getCheckCode()
+    if (res.code === 1) {
+      checkCodeImg.value = res.data.checkCode
+      loginForm.checkCodeKey = res.data.checkCodeKey
     }
-  },
-  created() {
-    this.refreshCheckCode()
-  },
-  methods: {
-    // 刷新验证码
-    async refreshCheckCode() {
-      try {
-        const res = await getCheckCode()
-        if (res.code === 1) {
-          this.checkCodeImg = res.data.checkCode
-          this.loginForm.checkCodeKey = res.data.checkCodeKey
-        }
-      } catch (error) {
-        console.error('获取验证码失败:', error)
-        this.$message.error('获取验证码失败')
-      }
-    },
-    // 处理登录
-    handleLogin() {
-      this.$refs.loginForm.validate(async valid => {
-        if (valid) {
-          this.loading = true
-          try {
-            // 检查验证码是否已获取
-            if (!this.loginForm.checkCodeKey) {
-              this.$message.error('请先获取验证码')
-              this.refreshCheckCode()
-              return
-            }
-            
-            const res = await login(this.loginForm)
-            if (res.code === 1) {
-              this.$message.success('登录成功')
-              // 登录成功，将时间戳和token组合存储
-              const timestamp = Date.now()
-              const tokenWithTime = `${res.data.token}_${timestamp}`
-              sessionStorage.setItem('token', tokenWithTime)
-              this.$router.push('/dashboard')
-            } else {
-              this.$message.error(res.message || '登录失败')
-              this.refreshCheckCode()
-            }
-          } catch (error) {
-            console.error('登录失败:', error)
-            this.refreshCheckCode()
-          } finally {
-            this.loading = false
-          }
-        }
-      })
-    }
+  } catch (error) {
+    console.error('获取验证码失败:', error)
+    ElMessage.error('获取验证码失败')
   }
 }
+
+// 处理登录
+const handleLogin = async () => {
+  if (!loginFormRef.value) return
+  
+  await loginFormRef.value.validate(async (valid) => {
+    if (valid) {
+      loading.value = true
+      try {
+        // 检查验证码是否已获取
+        if (!loginForm.checkCodeKey) {
+          ElMessage.error('请先获取验证码')
+          refreshCheckCode()
+          return
+        }
+        
+        const res = await login(loginForm)
+        if (res.code === 1) {
+          ElMessage.success('登录成功')
+          
+          // 从cookie获取token并保存到sessionStorage
+          const token = getCookie('adminToken')
+          console.log('保存token:', token) // 调试用
+          
+          if (token) {
+            sessionStorage.setItem('token', token)
+            
+            // 连接WebSocket
+            if (websocket) {
+              websocket.connect()
+            }
+            
+            router.push('/dashboard')
+          } else {
+            ElMessage.error('获取token失败')
+            refreshCheckCode()
+          }
+        } else {
+          ElMessage.error(res.message || '登录失败')
+          refreshCheckCode()
+        }
+      } catch (error) {
+        console.error('登录失败:', error)
+        refreshCheckCode()
+      } finally {
+        loading.value = false
+      }
+    }
+  })
+}
+
+// 组件挂载时获取验证码
+onMounted(() => {
+  refreshCheckCode()
+})
 </script>
+
 
 <style lang="scss" scoped>
 .login-container {

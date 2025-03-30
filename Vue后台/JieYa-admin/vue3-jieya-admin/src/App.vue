@@ -1,5 +1,7 @@
-<script setup>
-// App.vue 作为根组件，保持简洁
+<script>
+export default {
+  name: 'App'
+}
 </script>
 
 <template>

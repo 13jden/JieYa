@@ -63,19 +63,33 @@ const routes = [
   {
     path: '/product',
     component: Layout,
-    meta: { title: '商品管理', icon: 'shopping' },
+    name: 'product',
+    meta: { title: '商品管理', icon: 'ShoppingCart' },
+    redirect: '/product/venue',
     children: [
-      {
-        path: 'list',
-        name: 'ProductList',
-        component: () => import('@/views/product/list.vue'),
-        meta: { title: '商品列表' }
-      },
       {
         path: 'venue',
         name: 'Venue',
         component: () => import('@/views/product/venue.vue'),
         meta: { title: '场地管理' }
+      },
+      {
+        path: 'venue/booking',
+        name: 'VenueBooking',
+        component: () => import('@/views/product/venue/booking.vue'),
+        meta: { title: '场地预约订单' }
+      },
+      {
+        path: 'prop',
+        name: 'Prop',
+        component: () => import('@/views/product/prop.vue'),
+        meta: { title: '道具管理' }
+      },
+      {
+        path: 'prop/rental',
+        name: 'PropRental',
+        component: () => import('@/views/product/prop/rental.vue'),
+        meta: { title: '道具租借订单' }
       }
     ]
   },
@@ -88,6 +102,20 @@ const routes = [
         name: 'User',
         component: () => import('@/views/user/index.vue'),
         meta: { title: '用户管理', icon: 'user' }
+      }
+    ]
+  },
+  {
+    path: '/message',
+    component: Layout,
+    name: 'Message',
+    meta: { title: '消息中心', icon: 'Message' },
+    children: [
+      {
+        path: '',
+        name: 'MessageCenter',
+        component: () => import('@/views/message/index.vue'),
+        meta: { title: '消息中心', keepAlive: true }
       }
     ]
   }
@@ -110,13 +138,19 @@ router.beforeEach((to, from, next) => {
       next()
     }
   } else {
-    // 如果未登录，访问其他页面则重定向到登录页
+    const token = getCookie('adminToken');
     if (!token) {
       next('/login')
     } else {
+      sessionStorage.setItem('token', token);
       next()
     }
   }
 })
-
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
 export default router 

@@ -1,6 +1,7 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
 const api_user = require("../../api/user.js");
+const utils_websocket = require("../../utils/websocket.js");
 const _sfc_main = {
   __name: "login",
   setup(__props) {
@@ -58,6 +59,13 @@ const _sfc_main = {
           checkCode: checkCode.value
         });
         if (res.code === 1) {
+          const token = res.data.token;
+          common_vendor.index.setStorageSync("token", token);
+          const wsUrl = "ws://localhost:8082/websocket";
+          utils_websocket.webSocketService.connect(wsUrl, token);
+          utils_websocket.webSocketService.on("message", (data) => {
+            console.log("接收到WebSocket消息:", data);
+          });
           common_vendor.index.showToast({
             title: "登录成功",
             icon: "success",

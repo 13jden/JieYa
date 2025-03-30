@@ -17,7 +17,7 @@ const _sfc_main = {
     }
     return (_ctx, _cache) => {
       return {
-        a: __props.propData.image,
+        a: __props.propData.coverImage,
         b: common_vendor.t(__props.propData.name),
         c: common_vendor.t(__props.propData.description),
         d: common_vendor.t(__props.propData.price),

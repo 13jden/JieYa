@@ -10,6 +10,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src')
     }
   },
+  define: {
+    global: 'window',
+  },
   server: {
     port: 5173,
     proxy: {
@@ -17,6 +20,11 @@ export default defineConfig({
         target: 'http://localhost:8082',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      '/ws': {
+        target: 'http://localhost:8082',
+        ws: true,
+        changeOrigin: true
       }
     }
   }

@@ -1,8 +1,25 @@
 {
-  "hash": "8fe70220",
-  "configHash": "527b8371",
-  "lockfileHash": "c8d241a7",
-  "browserHash": "077d1410",
-  "optimized": {},
-  "chunks": {}
+  "hash": "71d38fe7",
+  "configHash": "f3cb759d",
+  "lockfileHash": "df175a88",
+  "browserHash": "1b50e450",
+  "optimized": {
+    "sockjs-client": {
+      "src": "../../../../../../../../../node_modules/sockjs-client/lib/entry.js",
+      "file": "sockjs-client.js",
+      "fileHash": "fbf09d6c",
+      "needsInterop": true
+    },
+    "stompjs": {
+      "src": "../../../../../../../../../node_modules/stompjs/index.js",
+      "file": "stompjs.js",
+      "fileHash": "b5480d63",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-Y2F7D3TJ": {
+      "file": "chunk-Y2F7D3TJ.js"
+    }
+  }
 }

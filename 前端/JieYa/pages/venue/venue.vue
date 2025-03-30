@@ -7,28 +7,49 @@
 			</view>
 			
 			<scroll-view class="category-scroll" scroll-x="true" show-scrollbar="false">
-				<view class="category-container">
-					<view class="category-item" 
-							v-for="(category, index) in categories" 
-							:key="index"
-							:class="{ active: activeCategory === index }"
-							@tap="setCategory(index)">
-						{{ category }}
-					</view>
+				<view 
+					v-for="(item, index) in categories" 
+					:key="index" 
+					class="category-item" 
+					:class="{ active: activeTagId === item.id }"
+					@tap="setCategory(item)"
+				>
+					{{ item.tagName }}
 				</view>
 			</scroll-view>
 		</view>
 		
-		<scroll-view class="venue-list" scroll-y="true" @scrolltolower="loadMore">
-			<venue-item 
+		<scroll-view 
+			class="venue-list" 
+			scroll-y="true" 
+			:style="{ height: scrollHeight + 'px' }"
+		>
+			<view 
 				v-for="(item, index) in filteredVenues" 
 				:key="index" 
-				:venue-data="item"
-				@item-click="onVenueClick"
-			></venue-item>
+				class="venue-item"
+				@tap="onVenueClick(item)"
+			>
+				<image :src="item.coverImage" mode="aspectFill" class="venue-image"></image>
+				<view class="venue-info">
+					<view class="venue-name">{{ item.name }}</view>
+					<view class="venue-location">
+						<text class="location-icon">📍</text>
+						<text class="location-text">{{ item.location }}</text>
+					</view>
+					
+					<!-- 直接显示转换好的标签名称 -->
+					<view v-if="item.tagNames && item.tagNames.length > 0" class="venue-tags">
+						<text v-for="(tagName, tagIndex) in item.tagNames" :key="tagIndex" class="venue-tag">
+							{{ tagName }}
+						</text>
+					</view>
+					
+					<view class="venue-price">¥{{ item.price }}<text class="price-unit">/小时</text></view>
+				</view>
+			</view>
 			
-			<view v-if="loading" class="loading">加载中...</view>
-			<view v-if="noMoreData" class="no-more">没有更多场地了</view>
+			<view class="safe-bottom-area"></view>
 		</scroll-view>
 		
 		<!-- 悬浮按钮 -->
@@ -43,121 +64,197 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import VenueItem from '../../components/venue-item/venue-item.vue';
+import { getVenueList, searchVenue, getVenueTags } from '../../api/venue.js';
 
-// 模拟数据
-const venueList = ref([
-	{
-		id: 1,
-		name: '阳光心理咨询室',
-		description: '安静舒适的咨询环境，专业设备齐全，适合个人咨询和小组活动',
-		location: '杭州市西湖区文三路',
-		price: 120,
-		capacity: 8,
-		tags: ['安静', '舒适', '专业设备'],
-		image: 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/2.jpg'
-	},
-	{
-		id: 2,
-		name: '心灵花园工作室',
-		description: '温馨自然的环境，有独立休息区和茶水间，适合长时间心理工作坊',
-		location: '杭州市拱墅区莫干山路',
-		price: 200,
-		capacity: 15,
-		tags: ['自然', '宽敞', '休息区'],
-		image: 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/3.jpg'
-	},
-	{
-		id: 3,
-		name: '静心沙龙',
-		description: '位于市中心的高端咨询场所，隔音效果好，私密性强，适合VIP客户',
-		location: '杭州市上城区平海路',
-		price: 280,
-		capacity: 4,
-		tags: ['高端', '私密', '市中心'],
-		image: 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/backgroundImage.jpg'
-	},
-	{
-		id: 4,
-		name: '青少年心理活动中心',
-		description: '专为青少年设计的活动空间，配备互动游戏设施，适合团体心理辅导',
-		location: '杭州市滨江区江南大道',
-		price: 150,
-		capacity: 20,
-		tags: ['青少年', '互动', '团体活动'],
-		image: 'https://jiayaya.oss-cn-hangzhou.aliyuncs.com/2.jpg'
-	}
-]);
-
+// 保留基本 ref 变量
 const searchText = ref('');
-const categories = ref(['全部', '个人咨询', '团体活动', '工作坊', '亲子空间']);
-const activeCategory = ref(0);
 const loading = ref(false);
-const noMoreData = ref(false);
+const venueList = ref([]);
+const scrollHeight = ref(0);
 
-// 根据筛选条件过滤场地
+// 标签相关变量
+const tagList = ref([]); // 存储标签列表
+const categories = ref([{ id: 0, name: '全部' }]); // 默认分类
+const activeTagId = ref(0); // 当前选中的标签ID
+
+// 计算属性 - 根据当前选中的标签过滤场地
 const filteredVenues = computed(() => {
-	let result = venueList.value;
-	
-	// 搜索过滤
-	if (searchText.value) {
-		result = result.filter(item => 
-			item.name.includes(searchText.value) || 
-			item.description.includes(searchText.value) ||
-			item.location.includes(searchText.value)
+	if (activeTagId.value === 0) {
+		return venueList.value;
+	} else {
+		// 根据选中的标签过滤场地
+		return venueList.value.filter(venue => 
+			venue.tags && venue.tags.includes(activeTagId.value)
 		);
 	}
-	
-	// 分类过滤 (简化示例，实际应该根据场地类型属性过滤)
-	if (activeCategory.value !== 0) {
-		// 这里只是示例，实际应该根据场地的类型属性进行过滤
-		const categoryMap = {
-			1: [1, 3], // 个人咨询场地ID
-			2: [2, 4], // 团体活动场地ID
-			3: [2],    // 工作坊场地ID
-			4: [4]     // 亲子空间场地ID
-		};
-		
-		const allowedIds = categoryMap[activeCategory.value] || [];
-		result = result.filter(item => allowedIds.includes(item.id));
-	}
-	
-	return result;
 });
 
-// 设置分类
-function setCategory(index) {
-	activeCategory.value = index;
-}
+// 获取标签列表
+const fetchTags = async () => {
+	try {
+		const result = await getVenueTags();
+		
+		if (result.code === 1 && result.data) {
+			tagList.value = result.data;
+			
+			categories.value = [
+				{ id: 0, tagName: '全部' },
+				...result.data
+			];
+			
+			console.log('标签列表:', tagList.value);
+		}
+	} catch (error) {
+		console.error('获取标签列表失败:', error);
+		uni.showToast({
+			title: '获取标签列表失败',
+			icon: 'none'
+		});
+	}
+};
 
-// 加载更多
-function loadMore() {
-	if (noMoreData.value) return;
+// 加载场地列表并处理标签
+const fetchVenueList = async () => {
+	if (loading.value) return;
 	
 	loading.value = true;
+	venueList.value = []; // 清空现有数据
 	
-	// 模拟加载更多数据
-	setTimeout(() => {
+	try {
+		const result = await getVenueList();
+		
+		console.log('API返回数据:', result);
+		
+		// 检查返回的数据是否有效
+		if (result.code === 1 && result.data && result.data.length > 0) {
+			// 处理每个场地的标签，将ID转换为名称
+			const processedVenues = result.data.map(venue => {
+				const processedVenue = { ...venue };
+				
+				// 添加一个新的字段tagNames存储标签名称
+				if (venue.tags && Array.isArray(venue.tags)) {
+					processedVenue.tagNames = venue.tags.map(tagId => {
+						const tag = tagList.value.find(t => t.id === tagId);
+						return tag ? tag.tagName : ''; // 使用tagName字段
+					}).filter(name => name !== '');
+				} else {
+					processedVenue.tagNames = [];
+				}
+				
+				return processedVenue;
+			});
+			
+			venueList.value = processedVenues;
+			console.log('处理后的场地列表:', venueList.value);
+		} else {
+			// 没有数据时显示空列表
+			venueList.value = [];
+		}
+	} catch (error) {
+		console.error('获取场地列表失败:', error);
+		uni.showToast({
+			title: '获取场地列表失败',
+			icon: 'none'
+		});
+	} finally {
 		loading.value = false;
-		noMoreData.value = true; // 示例中设置没有更多数据
-	}, 1000);
+	}
+};
+
+// 搜索场地 - 简化搜索逻辑
+const handleSearch = async () => {
+	if (!searchText.value.trim()) {
+		// 如果搜索框为空，则显示所有场地
+		fetchVenueList();
+		return;
+	}
+	
+	loading.value = true;
+	venueList.value = []; // 清空现有数据
+	
+	try {
+		const result = await searchVenue(searchText.value);
+		
+		if (result.code === 1 && result.data && result.data.length > 0) {
+			venueList.value = result.data;
+		} else {
+			venueList.value = []; // 搜索无结果时显示空列表
+			uni.showToast({
+				title: '没有找到相关场地',
+				icon: 'none'
+			});
+		}
+	} catch (error) {
+		console.error('搜索场地失败:', error);
+		uni.showToast({
+			title: '搜索场地失败',
+			icon: 'none'
+		});
+	} finally {
+		loading.value = false;
+	}
+};
+
+// 设置分类
+function setCategory(item) {
+	if (activeTagId.value === item.id) return;
+	
+	activeTagId.value = item.id;
+	// 不需要重新请求，使用计算属性过滤结果
 }
 
-// 点击场地
-function onVenueClick(id) {
-	console.log('点击场地:', id);
-	uni.showToast({
-		title: '功能开发中',
-		icon: 'none'
+// 清除搜索内容
+function clearSearch() {
+	searchText.value = '';
+	fetchVenueList();
+}
+
+// 点击场地 - 传递场地对象
+function onVenueClick(item) {
+	console.log('点击场地:', item);
+	
+	// 准备要传递的数据
+	const venueData = {
+		id: item.id,
+		tagNames: item.tagNames || [] // 确保tagNames存在
+	};
+	
+
+	uni.navigateTo({
+		url: `/pages/venue_detail/venue_detail?id=${item.id}`
 	});
 }
 
+// 计算滚动区域高度，确保适应各种屏幕
+function calculateScrollHeight() {
+	const info = uni.getSystemInfoSync();
+	// 假设头部筛选区域高度为180rpx，底部安全区域为30rpx
+	// 转换rpx为px: rpx / 750 * 屏幕宽度
+	const headerHeight = 180 * info.windowWidth / 750;
+	scrollHeight.value = info.windowHeight - headerHeight;
+}
+
+// 页面加载时计算高度
+onMounted(() => {
+	calculateScrollHeight();
+	
+	// 先获取标签列表，再获取场地列表
+	fetchTags().then(() => {
+		fetchVenueList();
+	});
+	
+	// 监听窗口大小变化
+	uni.onWindowResize(() => {
+		calculateScrollHeight();
+	});
+});
+
 // 导航到我的预约
 function navigateToMyBookings() {
-	uni.showToast({
-		title: '我的预约功能开发中',
-		icon: 'none'
+	uni.navigateTo({
+		url: '/pages/order/order?activeTab=venue'
 	});
 }
 
@@ -241,8 +338,9 @@ function navigateToHome() {
 
 .venue-list {
 	flex: 1;
+	box-sizing: border-box;
+	padding-bottom: 30rpx;
 	padding: 20rpx;
-	padding-bottom: 120rpx; /* 为悬浮按钮留出空间 */
 }
 
 .loading, .no-more {
@@ -291,5 +389,116 @@ function navigateToHome() {
 	box-shadow: 0 10rpx 25rpx rgba(26, 115, 232, 0.4);
 }
 
+/* 安全区域，确保最后一个项目可以完全显示 */
+.safe-bottom-area {
+	height: 100rpx; /* 设置足够的底部空间 */
+	width: 100%;
+}
+
+/* 调整场地项间距 */
+.venue-item {
+	background-color: #ffffff;
+	border-radius: 16rpx;
+	box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+	margin-bottom: 30rpx;
+	overflow: hidden;
+	transition: transform 0.2s, box-shadow 0.2s;
+	
+	&:active {
+		transform: scale(0.98);
+		box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	}
+}
+
+.venue-image {
+	width: 100%;
+	height: 360rpx;
+	object-fit: cover;
+}
+
+.venue-info {
+	padding: 24rpx;
+}
+
+.venue-name {
+	font-size: 34rpx;
+	font-weight: 600;
+	color: #333333;
+	margin-bottom: 16rpx;
+	line-height: 1.3;
+}
+
+.venue-location {
+	display: flex;
+	align-items: center;
+	margin-bottom: 16rpx;
+	
+	.location-icon {
+		font-size: 28rpx;
+		margin-right: 6rpx;
+		color: #ff5a5f;
+	}
+	
+	.location-text {
+		font-size: 26rpx;
+		color: #666666;
+		flex: 1;
+	}
+}
+
+.venue-tags {
+	display: flex;
+	flex-wrap: wrap;
+	margin-bottom: 16rpx;
+	
+	.venue-tag {
+		font-size: 22rpx;
+		padding: 6rpx 16rpx;
+		margin-right: 12rpx;
+		margin-bottom: 10rpx;
+		border-radius: 100rpx;
+		background-color: #f0f7ff;
+		color: #3f8cff;
+		font-weight: 500;
+	}
+}
+
+.venue-price {
+	font-size: 32rpx;
+	font-weight: 600;
+	color: #ff5a5f;
+	
+	.price-unit {
+		font-size: 24rpx;
+		font-weight: 400;
+		color: #999999;
+		margin-left: 4rpx;
+	}
+}
+
+/* 分类标签样式美化 */
+.category-scroll {
+	white-space: nowrap;
+	padding: 20rpx 20rpx 10rpx;
+	background-color: #fff;
+	border-bottom: 1rpx solid #f0f0f0;
+}
+
+.category-item {
+	display: inline-block;
+	padding: 12rpx 30rpx;
+	margin-right: 20rpx;
+	font-size: 28rpx;
+	color: #666666;
+	background-color: #f5f5f5;
+	border-radius: 100rpx;
+	transition: all 0.2s;
+	
+	&.active {
+		background-color: #3f8cff;
+		color: #ffffff;
+		font-weight: 500;
+	}
+}
 
 </style>

@@ -32,6 +32,128 @@
     </view>
   </view>
 </template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { getVerificationCode, login as userLogin } from '../../api/user';
+import webSocketService from '../../utils/websocket';
+
+// 表单数据
+const email = ref('');
+const password = ref('');
+const checkCode = ref('');
+const checkCodeKey = ref('');
+const codeImage = ref('');
+
+// 获取验证码
+const getCode = async () => {
+  try {
+    const res = await getVerificationCode();
+    if (res && res.key && res.image) {
+      checkCodeKey.value = res.key;
+      codeImage.value = res.image;
+    } else {
+      uni.showToast({
+        title: '获取验证码失败',
+        icon: 'none'
+      });
+    }
+  } catch (error) {
+    console.error('获取验证码错误:', error);
+    uni.showToast({
+      title: '获取验证码失败',
+      icon: 'none'
+    });
+  }
+};
+
+// 刷新验证码
+const refreshCode = () => {
+  getCode();
+};
+
+// 登录
+const login = async () => {
+  // 表单验证
+  if (!email.value) {
+    uni.showToast({ title: '请输入邮箱', icon: 'none' });
+    return;
+  }
+  
+  if (!password.value) {
+    uni.showToast({ title: '请输入密码', icon: 'none' });
+    return;
+  }
+  
+  if (!checkCode.value) {
+    uni.showToast({ title: '请输入验证码', icon: 'none' });
+    return;
+  }
+  
+  if (!checkCodeKey.value) {
+    uni.showToast({ title: '验证码已失效，请刷新', icon: 'none' });
+    getCode();
+    return;
+  }
+  
+  // 提交登录
+  try {
+    const res = await userLogin({
+      email: email.value,
+      password: password.value,
+      checkCodeKey: checkCodeKey.value,
+      checkCode: checkCode.value
+    });
+    
+    if (res.code === 1) {
+      const token = res.data.token;
+      
+      // 保存token到本地存储
+      uni.setStorageSync('token', token);
+      
+      // 使用WebSocket连接
+      const wsUrl = 'ws://localhost:8082/websocket';
+      webSocketService.connect(wsUrl, token);
+      
+      // 监听WebSocket消息
+      webSocketService.on('message', (data) => {
+        console.log('接收到WebSocket消息:', data);
+        // 处理消息
+      });
+      
+      // 登录成功提示并跳转
+      uni.showToast({ 
+        title: '登录成功', 
+        icon: 'success',
+        success: () => {
+          setTimeout(() => {
+            uni.switchTab({ url: '/pages/index/index' });
+          }, 1500);
+        }
+      });
+    } else {
+      uni.showToast({ title: res.message || '登录失败', icon: 'none' });
+      // 刷新验证码
+      getCode();
+    }
+  } catch (error) {
+    console.error('登录错误:', error);
+    uni.showToast({ title: error.message || '登录失败', icon: 'none' });
+    // 刷新验证码
+    getCode();
+  }
+};
+
+// 跳转到注册页
+const goRegister = () => {
+  uni.navigateTo({ url: '/pages/register/register' });
+};
+
+// 组件挂载时获取验证码
+onMounted(() => {
+  getCode();
+});
+</script>
 <style lang="scss" scoped>
 .container {
   padding: 50rpx;
@@ -137,110 +259,4 @@
   }
 }
 </style>
-<script setup>
-import { ref, onMounted } from 'vue';
-import { getVerificationCode, login as userLogin } from '@/api/user';
-
-// 表单数据
-const email = ref('');
-const password = ref('');
-const checkCode = ref('');
-const checkCodeKey = ref('');
-const codeImage = ref('');
-
-// 获取验证码
-const getCode = async () => {
-  try {
-    const res = await getVerificationCode();
-    if (res && res.key && res.image) {
-      checkCodeKey.value = res.key;
-      codeImage.value = res.image;
-    } else {
-      uni.showToast({
-        title: '获取验证码失败',
-        icon: 'none'
-      });
-    }
-  } catch (error) {
-    console.error('获取验证码错误:', error);
-    uni.showToast({
-      title: '获取验证码失败',
-      icon: 'none'
-    });
-  }
-};
-
-// 刷新验证码
-const refreshCode = () => {
-  getCode();
-};
-
-// 登录
-const login = async () => {
-  // 表单验证
-  if (!email.value) {
-    uni.showToast({ title: '请输入邮箱', icon: 'none' });
-    return;
-  }
-  
-  if (!password.value) {
-    uni.showToast({ title: '请输入密码', icon: 'none' });
-    return;
-  }
-  
-  if (!checkCode.value) {
-    uni.showToast({ title: '请输入验证码', icon: 'none' });
-    return;
-  }
-  
-  if (!checkCodeKey.value) {
-    uni.showToast({ title: '验证码已失效，请刷新', icon: 'none' });
-    getCode();
-    return;
-  }
-  
-  // 提交登录
-  try {
-    const res = await userLogin({
-      email: email.value,
-      password: password.value,
-      checkCodeKey: checkCodeKey.value,
-      checkCode: checkCode.value
-    });
-    
-    if (res.code === 1) {
-      uni.showToast({ 
-        title: '登录成功', 
-        icon: 'success',
-        success: () => {
-          // 延迟跳转到首页
-          setTimeout(() => {
-            uni.switchTab({ url: '/pages/index/index' });
-          }, 1500);
-        }
-      });
-    } else {
-      uni.showToast({ title: res.message || '登录失败', icon: 'none' });
-      // 刷新验证码
-      getCode();
-    }
-  } catch (error) {
-    console.error('登录错误:', error);
-    uni.showToast({ title: error.message || '登录失败', icon: 'none' });
-    // 刷新验证码
-    getCode();
-  }
-};
-
-// 跳转到注册页
-const goRegister = () => {
-  uni.navigateTo({ url: '/pages/register/register' });
-};
-
-// 组件挂载时获取验证码
-onMounted(() => {
-  getCode();
-});
-</script>
-
 

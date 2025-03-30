@@ -18,6 +18,7 @@ public class StringTools {
         return RandomStringUtils.random(count,true,true);
     }
 
+
     public static final String encodeByMd5(String originString){
         return StringTools.isEmpty(originString) ? null : DigestUtils.md5Hex(originString);
     }

@@ -73,7 +73,7 @@ function selectCategory(index) {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
   position: sticky;
-  top: -10;
+  top: 0;
   z-index: 100;
   
   .name {
@@ -146,15 +146,15 @@ function selectCategory(index) {
 
 .masonry {
   column-count: 2;
-  column-gap: 20rpx;
-  padding: 20rpx;
+  column-gap: 2rpx;
+  padding: 0rpx;
   background-color: #f8f9fa;
   min-height: calc(100vh - 300rpx);
 }
 
 .box {
   break-inside: avoid;
-  margin-bottom: 20rpx;
+  margin-bottom:5rpx;
   border-radius: 16rpx;
   overflow: hidden;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);

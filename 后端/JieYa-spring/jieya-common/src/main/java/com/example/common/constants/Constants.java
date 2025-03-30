@@ -34,6 +34,38 @@ public class Constants {
      * Redis Banner列表 key
      */
     public static final String REDIS_KEY_BANNER_LIST = "banner:list";
+    
+    /**
+     * Redis 场地信息 key前缀
+     */
+    public static final String REDIS_KEY_VENUE = REDIS_KEY_PRE + "venue:";
+    
+    /**
+     * Redis 场地列表 key
+     */
+    public static final String REDIS_KEY_VENUE_LIST = REDIS_KEY_PRE + "venue:list";
+    
+    /**
+     * Redis 道具信息 key前缀
+     */
+    public static final String REDIS_KEY_PROP = REDIS_KEY_PRE + "prop:";
+    
+    /**
+     * Redis 道具列表 key
+     */
+    public static final String REDIS_KEY_PROP_LIST = REDIS_KEY_PRE + "prop:list";
+
+    /**
+     * Redis 用户预约历史 key前缀
+     */
+    public static final String REDIS_KEY_USER_BOOKING_HISTORY = REDIS_KEY_PRE + "user:booking:";
+
+    /**
+     * Redis 用户租借历史 key前缀
+     */
+    public static final String REDIS_KEY_USER_RENTAL_HISTORY = REDIS_KEY_PRE + "user:rental:";
+
+    public static final String MESSAGE_QUEUE_KEY = "message:queue";
 
 }
 

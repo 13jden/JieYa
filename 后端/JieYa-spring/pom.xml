@@ -37,6 +37,10 @@
 		<java.version>17</java.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
 		<!-- Spring Boot dependencies (Already included in parent, no need to duplicate) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

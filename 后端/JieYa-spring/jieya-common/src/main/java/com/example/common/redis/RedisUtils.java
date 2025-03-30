@@ -94,9 +94,9 @@ public class RedisUtils<V> {
     }
 
 
-    public boolean lpush(String key, V value, Long time) {
+    public boolean lpush(String key, Object value, Integer time) {
         try {
-            redisTemplate.opsForList().leftPush(key, value);
+            redisTemplate.opsForList().leftPush(key, (V) value);
             if (time != null && time > 0) {
                 expire(key, time);
             }

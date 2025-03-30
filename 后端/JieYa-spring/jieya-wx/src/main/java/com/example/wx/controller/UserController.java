@@ -19,10 +19,13 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -45,6 +48,12 @@ public class UserController {
 
     @Autowired
     private ControllerTool controllerTool;
+
+    @Value("${upload.avatarPath}")
+    private String avatarPath;
+    
+    @Value("${host.url}")
+    private String hostUrl;
 
     @GetMapping("okok")
     public Result<String> okok(){
@@ -142,4 +151,115 @@ public class UserController {
         return Result.success("退出登录成功");
     }
 
+    /**
+     * 修改用户信息
+     * @return 操作结果
+     */
+    @PostMapping("/update")
+    public Result updateUserInfo(
+            String nickName,
+            MultipartFile avatar,
+            Boolean sex,
+            String birthday,
+            String school,
+            String personIntruduction,
+            HttpServletRequest request) {
+        
+        String token = request.getHeader("Authorization");
+        if (StringUtils.isEmpty(token)) {
+            token = request.getParameter("token");
+        }
+        
+        if (StringUtils.isEmpty(token)) {
+            return Result.error("未登录，请先登录");
+        }
+        
+        // 验证token
+        if (!JwtUtil.validateToken(token)) {
+            return Result.error("token无效");
+        }
+        
+        String userId = JwtUtil.getUsernameFromToken(token);
+        if (StringUtils.isEmpty(userId)) {
+            return Result.error("token解析失败");
+        }
+        TokenUserInfoDto tokenUserInfo = redisComponent.getTokenInfo(token);
+        if (tokenUserInfo == null) {
+            return Result.error("登录已过期，请重新登录");
+        }
+        if(!tokenUserInfo.getUserId().equals(userId)){
+            return Result.error("修改错误");
+        }
+        // 创建更新对象，只包含需要修改的字段
+        User updateUser = new User();
+        updateUser.setUserId(userId);
+        
+        boolean hasUpdates = false;
+        
+        if (!StringUtils.isEmpty(nickName)) {
+            updateUser.setNickName(nickName);
+            tokenUserInfo.setNickName(nickName); // 同时更新Redis中的信息
+            hasUpdates = true;
+        }
+        
+        if (sex != null) {
+            updateUser.setSex(sex);
+            hasUpdates = true;
+        }
+
+        //更新头像
+        if (avatar != null && !avatar.isEmpty()) {
+            try {
+                // 生成唯一文件名
+                String fileName = System.currentTimeMillis() + "_" + avatar.getOriginalFilename();
+                // 确保目录存在
+                File dir = new File(avatarPath);
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+                // 保存文件
+                File dest = new File(avatarPath + fileName);
+                avatar.transferTo(dest);
+                updateUser.setAvatar(fileName);
+                // 更新Redis中的头像信息，这里存储的是可访问的URL，而不是物理路径
+                tokenUserInfo.setAvatar(hostUrl + "/images/avatar/" + fileName);
+                hasUpdates = true;
+            } catch (Exception e) {
+                return Result.error("头像上传失败：" + e.getMessage());
+            }
+        }
+
+        if (!StringUtils.isEmpty(birthday)) {
+            updateUser.setBirthday(birthday);
+            hasUpdates = true;
+        }
+        
+        if (!StringUtils.isEmpty(school)) {
+            updateUser.setSchool(school);
+            hasUpdates = true;
+        }
+        
+        if (!StringUtils.isEmpty(personIntruduction)) {
+            updateUser.setPersonIntruduction(personIntruduction);
+            hasUpdates = true;
+        }
+        
+        if (!hasUpdates) {
+            return Result.error("没有提供任何更新信息");
+        }
+        
+        try {
+            boolean success = userService.update(updateUser);
+            if (success) {
+                // 更新Redis中的用户信息
+                redisComponent.saveTokenInfo(token, tokenUserInfo);
+                
+                return Result.success(tokenUserInfo);
+            } else {
+                return Result.error("用户信息更新失败");
+            }
+        } catch (Exception e) {
+            return Result.error("用户信息更新失败：" + e.getMessage());
+        }
+    }
 }

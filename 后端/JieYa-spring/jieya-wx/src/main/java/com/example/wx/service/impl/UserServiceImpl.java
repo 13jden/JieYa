@@ -11,6 +11,7 @@ import com.example.wx.mapper.UserMapper;
 import com.example.wx.service.UserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -34,6 +35,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Value("${host.url}")
+    private String hostUrl;
 
     @Override
     public List<User> searchByNickName(String nickName) {
@@ -79,7 +83,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         
         // 创建TokenUserInfoDto对象
         TokenUserInfoDto tokenUserInfoDto = CopyTools.copy(user, TokenUserInfoDto.class);
-        
+        tokenUserInfoDto.setAvatar(hostUrl + "/images/avatar/" + tokenUserInfoDto.getAvatar());
+        tokenUserInfoDto.setSchool(user.getSchool());
+        tokenUserInfoDto.setPersonIntruduction(user.getPersonIntruduction());
+        tokenUserInfoDto.setSex(user.getSex());
+        tokenUserInfoDto.setBirthday(user.getBirthday());   
         try {
             // 生成JWT token
             String token = JwtUtil.generateToken(user.getUserId().toString());
@@ -95,5 +103,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         } catch (Exception e) {
             throw new RuntimeException("生成token失败", e);
         }
+    }
+
+    @Override
+    public boolean update(User updateUser) {
+        return userMapper.updateById(updateUser)>0;
     }
 }

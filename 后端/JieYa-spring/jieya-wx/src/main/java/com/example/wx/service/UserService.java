@@ -22,4 +22,5 @@ public interface UserService extends IService<User> {
 
     TokenUserInfoDto login(String email, String password, String ip);
 
+    boolean update(User updateUser);
 }

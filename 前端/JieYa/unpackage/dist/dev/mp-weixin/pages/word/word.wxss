@@ -28,8 +28,10 @@
   background-color: #f6f7fc;
 }
 .user.data-v-ce61a269 {
-  height: 400rpx;
+  height: auto;
   width: 100%;
+  padding-bottom: 0rpx;
+  /* 性别和学校信息样式 */
 }
 .user .header.data-v-ce61a269 {
   display: flex;
@@ -78,6 +80,27 @@
 .user .introduction.data-v-ce61a269 {
   margin: 30rpx;
   font-size: 29rpx;
+  color: #666;
+}
+.user .user-info.data-v-ce61a269 {
+  margin: 0 30rpx 30rpx;
+  display: flex;
+  flex-wrap: wrap;
+}
+.user .user-info .info-item.data-v-ce61a269 {
+  display: flex;
+  align-items: center;
+  margin-right: 30rpx;
+  background-color: #f0f0f0;
+  padding: 6rpx 16rpx;
+  border-radius: 30rpx;
+  margin-bottom: 10rpx;
+}
+.user .user-info .info-item uni-icons.data-v-ce61a269 {
+  margin-right: 8rpx;
+}
+.user .user-info .info-item text.data-v-ce61a269 {
+  font-size: 26rpx;
   color: #666;
 }
 .box.data-v-ce61a269 {
@@ -144,10 +167,10 @@
   border-left: 2rpx solid #ddd;
 }
 .three.data-v-ce61a269 {
+  margin-top: 30rpx;
   display: flex;
   background-color: #fff;
   height: 140rpx;
-  margin-top: 0rpx;
   justify-content: space-between;
 }
 .three .good.data-v-ce61a269, .three .collect.data-v-ce61a269, .three .history.data-v-ce61a269, .three .focus.data-v-ce61a269 {

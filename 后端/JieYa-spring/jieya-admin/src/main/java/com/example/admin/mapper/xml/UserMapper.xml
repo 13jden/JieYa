@@ -18,11 +18,13 @@
         <result column="status" property="status" />
         <result column="theme" property="theme" />
         <result column="notice_info" property="noticeInfo" />
+        <result column="avatar" property="avatar" />
+
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        user_id, nick_name, email, password, sex, birthday, school, person_intruduction, join_time, last_login_time, last_login_ip, status, theme, notice_info
+        user_id, nick_name, email, password, sex, birthday, school, person_intruduction, join_time, last_login_time, last_login_ip, status, theme, notice_info,avatar
     </sql>
 
 </mapper>

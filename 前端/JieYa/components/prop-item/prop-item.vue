@@ -1,6 +1,6 @@
 <template>
 	<view class="prop-item" @tap="onItemClick">
-		<image class="prop-image" :src="propData.image" mode="aspectFill"></image>
+		<image :src="propData.coverImage" mode="aspectFill" class="prop-image"></image>
 		<view class="prop-info">
 			<view class="prop-name">{{ propData.name }}</view>
 			<view class="prop-desc">{{ propData.description }}</view>

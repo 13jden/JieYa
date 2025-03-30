@@ -11,6 +11,42 @@ public class TokenUserInfoDto implements Serializable {
         private String nickName;
         private String avatar;
         private Long expireAt;
+        private String school;
+        private String personIntruduction;
+        private Boolean sex;
+        private String birthday;
+
+    public String getSchool() {
+        return school;
+    }
+
+    public void setSchool(String school) {
+        this.school = school;
+    }
+
+    public String getPersonIntruduction() {
+        return personIntruduction;
+    }
+
+    public void setPersonIntruduction(String personIntruduction) {
+        this.personIntruduction = personIntruduction;
+    }
+
+    public Boolean getSex() {
+        return sex;
+    }
+
+    public void setSex(Boolean sex) {
+        this.sex = sex;
+    }
+
+    public String getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(String birthday) {
+        this.birthday = birthday;
+    }
 
     public String getUserId() {
         return userId;
@@ -73,4 +109,5 @@ public class TokenUserInfoDto implements Serializable {
     private Integer fansCount;
 
     private Integer focusCount;
+
 }

@@ -84,6 +84,7 @@ public class User implements Serializable {
      */
     private Boolean status;
 
+    private String avatar;
     /**
      * 主题 
      */
@@ -94,7 +95,23 @@ public class User implements Serializable {
      */
     private String noticeInfo;
 
-    private String avatar;
+    /**
+     * 点赞数
+     */
+    private Integer likeCount;
 
+    /**
+     * 收藏数
+     */
+    private Integer collectCount;
 
+    /**
+     * 粉丝数
+     */
+    private Integer fansCount;
+
+    /**
+     * 关注数
+     */
+    private Integer focusCount;
 }

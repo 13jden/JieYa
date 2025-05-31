@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form">
+    <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form">
       <h3 class="title">后台管理系统</h3>
       <el-form-item prop="account">
         <el-input
@@ -51,11 +51,11 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElForm } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { getCheckCode, login } from '@/api/admin'
 import { inject } from 'vue'
 
-// 获取依赖
+// 路由和依赖
 const router = useRouter()
 const websocket = inject('websocket')
 
@@ -79,7 +79,7 @@ const loginRules = {
   checkCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
 }
 
-// 获取Cookie工具函数
+// 获取 Cookie
 function getCookie(name) {
   const value = `; ${document.cookie}`
   const parts = value.split(`; ${name}=`)
@@ -101,37 +101,34 @@ async function refreshCheckCode() {
   }
 }
 
-// 处理登录
+// 登录逻辑
 const handleLogin = async () => {
   if (!loginFormRef.value) return
-  
+
   await loginFormRef.value.validate(async (valid) => {
     if (valid) {
       loading.value = true
       try {
-        // 检查验证码是否已获取
         if (!loginForm.checkCodeKey) {
           ElMessage.error('请先获取验证码')
           refreshCheckCode()
           return
         }
-        
+
         const res = await login(loginForm)
         if (res.code === 1) {
           ElMessage.success('登录成功')
-          
-          // 从cookie获取token并保存到sessionStorage
+
           const token = getCookie('adminToken')
-          console.log('保存token:', token) // 调试用
-          
+          console.log('保存token:', token)
+
           if (token) {
             sessionStorage.setItem('token', token)
-            
-            // 连接WebSocket
+
             if (websocket) {
               websocket.connect()
             }
-            
+
             router.push('/dashboard')
           } else {
             ElMessage.error('获取token失败')
@@ -151,12 +148,10 @@ const handleLogin = async () => {
   })
 }
 
-// 组件挂载时获取验证码
 onMounted(() => {
   refreshCheckCode()
 })
 </script>
-
 
 <style lang="scss" scoped>
 .login-container {
@@ -192,4 +187,4 @@ onMounted(() => {
     }
   }
 }
-</style> 
+</style>

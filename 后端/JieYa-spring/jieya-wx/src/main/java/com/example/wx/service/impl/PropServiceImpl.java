@@ -73,25 +73,48 @@ public class PropServiceImpl extends ServiceImpl<PropMapper, Prop> implements Pr
                 .map(image -> {
                     ImageDto imageDto = new ImageDto();
                     imageDto.setId(image.getId());
-                    imageDto.setImageUrl(hostUrl + "/images/prop/" + image.getImageUrl());
+                    imageDto.setImageUrl(image.getImageUrl());
                     imageDto.setSortOrder(image.getSortOrder());
                     imageDto.setIsDetail("0");
                     return imageDto;
                 })
                 .collect(Collectors.toList());
-            
+
+
             // 转换详情图片列表
             List<ImageDto> detailImageDtoList = detailImages.stream()
                 .map(image -> {
                     ImageDto imageDto = new ImageDto();
                     imageDto.setId(image.getId());
-                    imageDto.setImageUrl(hostUrl + "/images/prop/" + image.getImageUrl());
+                    imageDto.setImageUrl(image.getImageUrl());
                     imageDto.setSortOrder(image.getSortOrder());
                     imageDto.setIsDetail("1");
                     return imageDto;
                 })
                 .collect(Collectors.toList());
-            
+            propDto.setImageList(normalImageDtoList);
+            propDto.setDetailImageList(detailImageDtoList);
+            redisComponent.setProp(propDto);
+            normalImageDtoList = normalImages.stream()
+                    .map(image -> {
+                        ImageDto imageDto = new ImageDto();
+                        imageDto.setId(image.getId());
+                        imageDto.setImageUrl(hostUrl + "/images/prop/" + image.getImageUrl());
+                        imageDto.setSortOrder(image.getSortOrder());
+                        imageDto.setIsDetail("0");
+                        return imageDto;
+                    })
+                    .collect(Collectors.toList());
+            detailImageDtoList = detailImages.stream()
+                    .map(image -> {
+                        ImageDto imageDto = new ImageDto();
+                        imageDto.setId(image.getId());
+                        imageDto.setImageUrl(hostUrl + "/images/prop/" + image.getImageUrl());
+                        imageDto.setSortOrder(image.getSortOrder());
+                        imageDto.setIsDetail("1");
+                        return imageDto;
+                    })
+                    .collect(Collectors.toList());
             propDto.setImageList(normalImageDtoList);
             propDto.setDetailImageList(detailImageDtoList);
             

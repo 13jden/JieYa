@@ -23,7 +23,12 @@
     "pages/detail_comment/detail_comment",
     "pages/order/order",
     "pages/prop_rental/prop_rental",
-    "pages/venue_rental/venue_rental"
+    "pages/venue_rental/venue_rental",
+    "pages/user/user",
+    "pages/systemMessage/systemMessage",
+    "pages/orderMessage/orderMessage",
+    "components/message-notification/message-notification",
+    "pages/search/search"
   ],
   "window": {
     "navigationBarTextStyle": "black",

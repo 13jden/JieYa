@@ -11,12 +11,17 @@
 			:indicator-active-color="'#ffffff'" 
 			class="swiper"
 		  >
-			<swiper-item v-for="(banner, index) in bannerList" :key="banner.bannerId" @tap="handleBannerClick(banner)">
+		  <swiper-item 
+				v-for="(banner, index) in bannerList" 
+				:key="banner.bannerId" 
+				@tap="handleBannerClick(banner)">
 				<view class="swiper-item">
 					<image :src="banner.image" mode="aspectFill"></image>
 					<view class="banner-overlay" v-if="banner.text">
-						<view class="banner-text">{{ banner.text }}</view>
-						<view class="banner-type">{{ banner.getTypeText() }}</view>
+					<view class="banner-text">{{ banner.text }}</view>
+					<view class="banner-type">
+						{{ banner.type === 1 ? '场地' : banner.type === 2 ? '道具' : '笔记' }}
+					</view>
 					</view>
 				</view>
 			</swiper-item>
@@ -142,19 +147,68 @@ async function fetchBannerData() {
 		];
 	}
 }
-
-// 处理Banner点击事件
+/**
+ * 处理轮播图点击跳转
+ * @param {Object} banner 轮播图对象
+ */
 function handleBannerClick(banner) {
-	const url = banner.getJumpUrl();
-	if (url) {
-		uni.navigateTo({
-			url,
-			fail: () => {
-				uni.showToast({
-					title: '页面跳转失败',
-					icon: 'none'
-				});
+	console.log('点击轮播图:', banner);
+	
+	if (!banner) {
+		console.error('无效的轮播图数据');
+		return;
+	}
+	
+	try {
+		// 有contentId则跳转到详情页
+		if (banner.contentId) {
+			switch (banner.type) {
+				case 1: // 场地
+					uni.navigateTo({
+						url: `/pages/venue_detail/venue_detail?id=${banner.contentId}`
+					});
+					break;
+				case 2: // 道具
+					uni.navigateTo({
+						url: `/pages/prop_detail/prop_detail?id=${banner.contentId}`
+					});
+					break;
+				case 3: // 笔记
+					uni.navigateTo({
+						url: `/pages/note/note?id=${banner.contentId}`
+					});
+					break;
+				default:
+					console.warn('未知的轮播图类型:', banner.type);
 			}
+		} 
+		// 无contentId则跳转到列表页 - 使用navigateTo替代switchTab
+		else {
+			switch (banner.type) {
+				case 1: // 场地列表
+					uni.navigateTo({
+						url: '/pages/venue/venue'
+					});
+					break;
+				case 2: // 道具列表
+					uni.navigateTo({
+						url: '/pages/prop/prop'
+					});
+					break;
+				case 3: // 笔记发现页
+					uni.navigateTo({
+						url: '/pages/find/find'
+					});
+					break;
+				default:
+					console.warn('未知的轮播图类型:', banner.type);
+			}
+		}
+	} catch (error) {
+		console.error('跳转失败:', error);
+		uni.showToast({
+			title: '页面跳转失败',
+			icon: 'none'
 		});
 	}
 }
@@ -189,15 +243,17 @@ function goToNote(noteId) {
 	});
 }
 
-function navigateToProp() {
+function navigateToProp(id) {
+	console.log(id);
 	uni.navigateTo({
-		url: '/pages/prop/prop'
+		url: `/pages/prop/prop`
 	});
 }
 
-function navigateToVenue() {
+function navigateToVenue(id) {
+	console.log(id);
 	uni.navigateTo({
-		url: '/pages/venue/venue'
+		url: `/pages/venue/venue`
 	});
 }
 </script>

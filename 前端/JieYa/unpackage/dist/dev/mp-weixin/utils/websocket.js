@@ -10,8 +10,10 @@ class WebSocketService {
     this.reconnectTimer = null;
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
-    this.reconnectInterval = 5e3;
-    this.pingInterval = 15e3;
+    this.reconnectInterval = 3e3;
+    this.pingInterval = 1e4;
+    this.lastHeartbeatResponse = Date.now();
+    this.manualDisconnect = false;
     this.listeners = {
       open: [],
       message: [],
@@ -26,16 +28,15 @@ class WebSocketService {
       console.log("WebSocket 已连接");
       return;
     }
+    this.manualDisconnect = false;
     this.close();
     this.url = url.replace("http://", "ws://").replace("https://", "wss://");
     this.token = token;
-    console.log("正在连接WebSocket...", this.url);
+    const wsUrl = `${this.url}?token=${this.token}`;
+    console.log("正在连接WebSocket...", wsUrl);
     try {
       this.socketTask = common_vendor.index.connectSocket({
-        url: this.token ? `${this.url}?token=${this.token}` : this.url,
-        header: {
-          "Authorization": `Bearer ${this.token}`
-        },
+        url: wsUrl,
         success: () => {
           console.log("WebSocket连接请求已发送");
         },
@@ -59,6 +60,7 @@ class WebSocketService {
     console.log("WebSocket连接已打开:", res);
     this.connected = true;
     this.reconnectAttempts = 0;
+    this.lastHeartbeatResponse = Date.now();
     this._startHeartbeat();
     this._triggerEvent("open", res);
   }
@@ -72,19 +74,30 @@ class WebSocketService {
         } catch (e) {
         }
       }
-      console.log("收到WebSocket消息:", data);
-      this._triggerEvent("message", data);
+      console.log("WebSocket收到原始消息:", data);
+      if (data.type === "heartbeat_response" || data.type === "HEARTBEAT" || data.type === "pong") {
+        console.log("收到心跳响应");
+        this.lastHeartbeatResponse = Date.now();
+        return;
+      }
+      this.processReceivedMessage(data);
     } catch (e) {
       console.error("处理WebSocket消息出错:", e);
     }
   }
   // 连接关闭回调
   _onClose(res) {
-    console.log("WebSocket连接已关闭:", res);
+    console.log("WebSocket连接已关闭, 状态码:", res.code, "原因:", res.reason);
     this.connected = false;
     this._stopHeartbeat();
     this._triggerEvent("close", res);
-    this._attemptReconnect();
+    if (!this.manualDisconnect) {
+      console.log("非手动断开，尝试重连...");
+      this._attemptReconnect();
+    } else {
+      console.log("手动断开连接，不进行重连");
+      this.manualDisconnect = false;
+    }
   }
   // 连接错误回调
   _onError(err) {
@@ -100,6 +113,7 @@ class WebSocketService {
     }
     try {
       const message = typeof data === "string" ? data : JSON.stringify(data);
+      console.log("发送WebSocket消息:", data);
       this.socketTask.send({
         data: message,
         success: () => {
@@ -119,8 +133,9 @@ class WebSocketService {
       return false;
     }
   }
-  // 关闭连接
+  // 主动关闭连接
   close() {
+    this.manualDisconnect = true;
     this._stopHeartbeat();
     clearTimeout(this.reconnectTimer);
     if (this.socketTask) {
@@ -151,7 +166,15 @@ class WebSocketService {
     this._stopHeartbeat();
     this.pingTimer = setInterval(() => {
       if (this.connected) {
-        this.send({ type: "heartbeat", timestamp: Date.now() });
+        const now = Date.now();
+        if (now - this.lastHeartbeatResponse > 45e3) {
+          console.warn("超过45秒未收到心跳响应，主动重连...");
+          this.close();
+          this._attemptReconnect();
+          return;
+        }
+        this.send({ type: "heartbeat" });
+        console.log("已发送心跳消息");
       }
     }, this.pingInterval);
   }
@@ -212,6 +235,119 @@ class WebSocketService {
   // 检查是否已连接
   isConnected() {
     return this.connected;
+  }
+  _processMessage(data) {
+    if (data && (data.type === "chat" || data.type === "USER-USER" || data.type === "ADMIN-USER" || data.type === "SYSTEM-USER" || data.type === "ORDER-USER")) {
+      console.log("收到聊天消息:", data);
+      this._triggerEvent("chat", data);
+      this._triggerEvent("message", data);
+      common_vendor.index.showToast({
+        title: `收到新消息: ${data.content || ""}`,
+        icon: "none",
+        duration: 3e3,
+        position: "top"
+      });
+    } else {
+      this._triggerEvent("message", data);
+    }
+  }
+  // 在WebSocketService类中添加处理消息的公共方法
+  processReceivedMessage(message) {
+    console.log("WebSocketService处理消息:", message);
+    if (message.type === "heartbeat_response" || message.type === "HEARTBEAT" || message.type === "pong") {
+      return;
+    }
+    const shouldShowNotification = !this.isCurrentlyChatting(message);
+    if (shouldShowNotification) {
+      this.showSimpleNotification(message);
+    }
+    if (message.type === "USER-USER" || message.type === "ADMIN-USER" || message.type === "SYSTEM-USER" || message.type === "ORDER-USER" || message.type === "chat") {
+      this._triggerEvent("chat", message);
+    }
+    this.updateBadgeIfNeeded();
+  }
+  // 添加一个方法检查是否当前正在与该用户聊天
+  isCurrentlyChatting(message) {
+    try {
+      const pages = getCurrentPages();
+      if (pages.length === 0)
+        return false;
+      const currentPage = pages[pages.length - 1];
+      if (currentPage.route !== "pages/friendMessage/friendMessage") {
+        return false;
+      }
+      const targetUserId = currentPage.options && currentPage.options.userId;
+      if (!targetUserId)
+        return false;
+      const messageSenderId = message.user || message.userId;
+      return targetUserId === messageSenderId || targetUserId === "admin" && message.type === "ADMIN-USER";
+    } catch (e) {
+      console.error("检查当前聊天状态出错:", e);
+      return false;
+    }
+  }
+  // 添加简单的通知方法
+  showSimpleNotification(message) {
+    let title = "";
+    let content = message.content || "";
+    if (message.type === "USER-USER") {
+      title = message.userName || "好友消息";
+    } else if (message.type === "SYSTEM-USER") {
+      title = "系统消息";
+    } else if (message.type === "ORDER-USER") {
+      title = "订单消息";
+    } else if (message.type === "ADMIN-USER") {
+      title = "管理员消息";
+    } else {
+      title = "新消息";
+    }
+    setTimeout(() => {
+      common_vendor.index.showToast({
+        title: `${title}: ${content}`,
+        icon: "none",
+        duration: 3e3,
+        position: "top"
+      });
+    }, 0);
+  }
+  // 角标更新备用方法
+  updateBadgeIfNeeded() {
+    common_vendor.index.request({
+      url: "http://localhost:8081/message/unread/count",
+      method: "GET",
+      header: {
+        "Authorization": common_vendor.index.getStorageSync("token")
+      },
+      success: (res) => {
+        if (res.statusCode === 200 && res.data.code === 1) {
+          const count = res.data.data || 0;
+          const pages = getCurrentPages();
+          if (pages.length === 0)
+            return;
+          const currentPage = pages[pages.length - 1];
+          const tabBarPages = [
+            "pages/index/index",
+            "pages/find/find",
+            "pages/publish/publish",
+            "pages/friend/friend",
+            "pages/word/word"
+          ];
+          const isTabBarPage = tabBarPages.some((path) => currentPage.route === path);
+          if (isTabBarPage) {
+            if (count > 0) {
+              common_vendor.index.setTabBarBadge({
+                index: 3,
+                text: count.toString()
+              });
+            } else {
+              common_vendor.index.removeTabBarBadge({
+                index: 3
+              });
+            }
+          }
+        }
+      }
+    });
   }
 }
 const webSocketService = new WebSocketService();

@@ -2,7 +2,9 @@ package com.example.wx.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.common.WxDto.MessageListDto;
 import com.example.common.WxDto.UserMessageDto;
+import com.example.common.pojo.Comment;
 import com.example.common.pojo.Message;
 
 import java.util.List;
@@ -20,7 +22,8 @@ public interface MessageService extends IService<Message> {
     /**
      * 获取用户消息会话列表
      */
-    Page<UserMessageDto> getUserMessagesList(String currentUserId, int pageNum, int pageSize);
+    Page<MessageListDto> getUserMessagesList(String currentUserId, int pageNum, int pageSize);
+
     
     /**
      * 获取与特定对象的聊天记录
@@ -76,4 +79,7 @@ public interface MessageService extends IService<Message> {
      * 获取未读订单消息数量
      */
     int getUnreadOrderCount(String currentUserId);
+
+
+    int getUnreadAllCount(String currentUserId);
 }

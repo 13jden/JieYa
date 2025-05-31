@@ -34,6 +34,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  height: 60rpx;
 }
 .title-box .name.data-v-1c765c2e {
   font-size: 36rpx;
@@ -44,18 +45,24 @@
   -webkit-text-fill-color: transparent;
 }
 .title-box .image1.data-v-1c765c2e {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 60rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  position: relative;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  object-fit: cover;
+  z-index: -1;
+  padding: 0;
+  /* 移除内边距让图像填满容器 */
+  transform: scale(1.15);
+  /* 放大图像但保持容器尺寸 */
+  transform-origin: center;
 }
 .title-box image.data-v-1c765c2e {
-  width: 45rpx;
-  height: 45rpx;
+  width: 50rpx;
+  height: 50rpx;
   padding: 10rpx;
   background-color: #f8f9fa;
   border-radius: 50%;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 }
 
 /* 新的分类滚动样式 */
@@ -66,7 +73,7 @@
   background-color: #fff;
   position: -webkit-sticky;
   position: sticky;
-  top: 160rpx;
+  top: 130rpx;
   z-index: 90;
 }
 .category-container.data-v-1c765c2e {
@@ -113,6 +120,26 @@
 .box.data-v-1c765c2e:active {
   transform: scale(0.98);
 }
+.loading.data-v-1c765c2e {
+  text-align: center;
+  padding: 20rpx;
+  color: #666;
+  font-size: 26rpx;
+}
+.back-to-top.data-v-1c765c2e {
+  position: fixed;
+  bottom: 100rpx;
+  right: 40rpx;
+  width: 80rpx;
+  height: 80rpx;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
 .no-more.data-v-1c765c2e {
   height: 100rpx;
   text-align: center;
@@ -123,4 +150,12 @@
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-radius: 12rpx;
   margin: 20rpx;
+}
+
+/* 新增 scroll-view 相关样式 */
+.content-scroll.data-v-1c765c2e {
+  height: calc(100vh - 220rpx);
+  /* 减去顶部组件的高度 */
+  width: 100%;
+  background-color: #f8f9fa;
 }

@@ -100,6 +100,17 @@ export function logout() {
   });
 }
 
+export function getDetail(userId) {
+  return request({
+    url: '/user/detail',
+    method: 'GET',
+    params: {
+      userId: userId
+    }
+  }).then(res => {
+    return res;
+  });
+}
 /**
  * 更新用户信息
  * @param {Object} data 用户信息
@@ -107,6 +118,12 @@ export function logout() {
  * @returns {Promise} 更新结果
  */
 export function updateUserInfo(data, avatarFile) {
+  // 准备数据，确保Boolean值被转换为字符串
+  const formData = {...data};
+  if (formData.sex !== undefined) {
+    formData.sex = String(formData.sex); // 将Boolean转换为'true'或'false'字符串
+  }
+
   // 如果有头像文件
   if (avatarFile && avatarFile.path) {
     return request({
@@ -114,7 +131,7 @@ export function updateUserInfo(data, avatarFile) {
       method: 'POST',
       filePath: avatarFile.path,
       name: 'avatar',
-      formData: data // 其他数据作为formData发送
+      formData: formData // 使用处理后的formData
     }).then(res => {
       if (res.code === 1) {
         // 更新成功后，更新本地存储的用户信息
@@ -131,7 +148,7 @@ export function updateUserInfo(data, avatarFile) {
       header: {
         'content-type': 'application/x-www-form-urlencoded'
       },
-      data: data
+      data: formData // 使用处理后的formData
     }).then(res => {
       if (res.code === 1) {
         // 更新成功后，更新本地存储的用户信息
@@ -180,4 +197,19 @@ function updateLocalUserInfo(updatedData, responseData) {
   } catch (error) {
     console.error('更新本地用户信息失败:', error);
   }
+}
+
+/**
+ * 搜索用户
+ * @param {String} keyword 搜索关键词
+ * @returns {Promise} 搜索结果
+ */
+export function searchUsers(keyword) {
+  return request({
+    url: '/user/search',
+    method: 'GET',
+    params: {
+      keyword
+    }
+  });
 } 

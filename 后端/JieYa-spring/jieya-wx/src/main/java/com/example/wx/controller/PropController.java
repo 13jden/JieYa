@@ -35,7 +35,7 @@ public class PropController {
         if(props==null){
             try {
              props = propService.listPropsWithCoverImages();
-             redisComponent.setPropList(props);
+//             redisComponent.setPropList(props);
                 return Result.success(props);
             } catch (Exception e) {
                 e.printStackTrace();

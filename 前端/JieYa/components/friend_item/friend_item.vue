@@ -1,98 +1,120 @@
 <template>
-	<view class="box">
-		<image :src="userimage" mode="aspectFill" class="image"></image>
-		<view class="spot" v-show="isNew"></view>
-		<view class="box2">
-			<view class="text">
-				<view class="text1">{{username}}</view>
-				<view class="text2">{{message}}</view>
+	<view class="friend-item">
+		<view class="avatar-container">
+			<image :src="userimage" class="avatar"></image>
+			<view v-if="badgeCount > 0" class="badge">
+				<text>{{ badgeCount > 99 ? '99+' : badgeCount }}</text>
 			</view>
-		<view class="date">
-			{{date}}
 		</view>
+		<view class="info">
+			<view class="username">{{ username }}</view>
+			<view class="message" :class="{ 'unread-message': isNew }">{{ message }}</view>
 		</view>
-		
+		<view class="date" v-if="date">
+			{{ date }}
+		</view>
 	</view>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+// 不需要导入defineProps和defineEmits
 const props = defineProps({
-	userimage:{
-		type:String,
-		default:"https://th.bing.com/th/id/R.5da7e5c735cc95f8f8e3d3bb7e981d7a?rik=koE8E6kqXKbipA&riu=http%3a%2f%2fwww.beihaiting.com%2fuploads%2fallimg%2f150515%2f10723-15051522234J95.jpg&ehk=CTB857uvdo4mBMipOW25WsUo7aaZd7w73ebL%2b7H71jA%3d&risl=&pid=ImgRaw&r=0",
+	username: {
+		type: String,
+		default: '未知用户'
 	},
-	username:{
-		type:String,
-		default:"育良书记"
+	userimage: {
+		type: String,
+		default: '/static/default-avatar.png'
 	},
-	message:{
-		type:String,
-		default:"你好"
+	message: {
+		type: String,
+		default: ''
 	},
-	date:{
-		type:String,
-		default:"8月9日"
+	date: {
+		type: String,
+		default: ''
 	},
-	isNew:{
-		type:Boolean,
-		default:true
+	isNew: {
+		type: Boolean,
+		default: false
+	},
+	badgeCount: {
+		type: Number,
+		default: 0
 	}
-})
-const emit = defineEmits(['click']);
-
-function handleClick() {
-  emit('click'); // 触发父组件的点击事件
-}
+});
 </script>
 
 <style lang="scss" scoped>
-	
-.box{
-	image{
-		margin-left: 30rpx;
-		border-radius: 30rpx;
-		height: 110rpx;
-		width: 110rpx;
-	}
-	height: 130rpx;
+.friend-item {
 	display: flex;
 	align-items: center;
-	background-color: rgb(255, 255, 255,0.8);
-	padding-bottom: 10rpx;
-	box-shadow: 0 2rpx 2rpx rgba(0, 0, 0, 0.04) ,0 -2rpx 2rpx rgba(0, 0, 0, 0.04);
+	padding: 30rpx;
+	background-color: #fff;
+	border-bottom: 1rpx solid #eaeaea;
+	position: relative;
 }
-.spot{
-	left: 125rpx;
-	margin-top: -80rpx;
-	position: absolute;
-	width: 25rpx;
-	height: 25rpx;
+
+.avatar-container {
+	position: relative;
+	margin-right: 30rpx;
+}
+
+.avatar {
+	width: 100rpx;
+	height: 100rpx;
 	border-radius: 50%;
-	background-color: #007aff;
 }
-.box2{
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-.text{
-	margin-left: 10rpx;
-	padding: 10rpx;
-	.text1{
-		font-size: 35rpx;
-	}
-	.text2{
-		margin-top: 8rpx;
-		font-size: 25rpx;
-		color: #999999;
-	}
-}
-.date{
+
+.badge {
 	position: absolute;
-	right: 20rpx;
-	margin-bottom: 30rpx;
-	font-size: 22rpx;
+	top: -10rpx;
+	right: -10rpx;
+	min-width: 40rpx;
+	height: 40rpx;
+	line-height: 40rpx;
+	border-radius: 20rpx;
+	background-color: #ff4d4f;
+	color: #fff;
+	font-size: 24rpx;
+	text-align: center;
+	padding: 0 10rpx;
+}
+
+.info {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.username {
+	font-size: 32rpx;
+	font-weight: 500;
+	color: #333;
+	margin-bottom: 10rpx;
+}
+
+.message {
+	font-size: 28rpx;
 	color: #999;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.unread-message {
+	color: #333;
+	font-weight: 500;
+}
+
+.date {
+	font-size: 24rpx;
+	color: #999;
+	position: absolute;
+	right: 30rpx;
+	top: 30rpx;
 }
 </style>

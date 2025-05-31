@@ -20,3 +20,18 @@ export function createApp() {
   }
 }
 // #endif
+
+// 拦截Tab切换
+uni.addInterceptor('switchTab', {
+  success(e) {
+    console.log('切换Tab:', e);
+    
+    // 获取应用实例并更新角标
+    const app = getApp();
+    if (app && app.updateUnreadMessageCount) {
+      setTimeout(() => {
+        app.updateUnreadMessageCount();
+      }, 200);
+    }
+  }
+});

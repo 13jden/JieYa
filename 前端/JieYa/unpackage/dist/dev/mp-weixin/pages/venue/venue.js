@@ -147,5 +147,5 @@ const _sfc_main = {
     };
   }
 };
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-c1e1bb09"], ["__file", "C:/Users/86182/Desktop/解压小程序/前端/JieYa/pages/venue/venue.vue"]]);
+const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-c1e1bb09"], ["__file", "C:/Users/86182/Desktop/上班/解压小程序/前端/JieYa/pages/venue/venue.vue"]]);
 wx.createPage(MiniProgramPage);

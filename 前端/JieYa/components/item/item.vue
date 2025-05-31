@@ -115,7 +115,7 @@ const toggleHandup = () => {
 
 .name {
 	width: auto;
-	font-size: 15rpx;
+	font-size: 20rpx;
 	margin-left: 20rpx;
 }
 .good{

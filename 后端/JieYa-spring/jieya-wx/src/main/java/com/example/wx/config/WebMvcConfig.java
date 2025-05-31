@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-        import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
@@ -24,7 +24,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/checkcode")
                 .excludePathPatterns("/ws")
                 .excludePathPatterns("/message/**")
-                .excludePathPatterns("/images/**");  // 排除所有静态资源
+                .excludePathPatterns("/images/**")  // 排除所有静态资源
+                .excludePathPatterns("/files/**");  // 排除所有静态资源
+
     }
 
     @Override
@@ -41,14 +43,21 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addResourceLocations("file:D:/wordProjectFile/admin/venue/");
         registry.addResourceHandler("/images/prop/**")
                 .addResourceLocations("file:D:/wordProjectFile/admin/prop/");
+        registry.addResourceHandler("/images/note/**")
+                .addResourceLocations("file:D:/wordProjectFile/user/note/");
+        registry.addResourceHandler("/files/message/**")
+                .addResourceLocations("file:D:/wordProjectFile/message/");
+        registry.addResourceHandler("/images/comment")
+                .addResourceLocations("file:D:/wordProjectFile/user/comment/");
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:8081", "http://localhost:8082")
+                .allowedOrigins("http://localhost:8081", "http://localhost:8082","http://localhost:5173")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
+
 } 

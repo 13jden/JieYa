@@ -1,6 +1,7 @@
 package com.example.wx.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.common.WxDto.MessageListDto;
 import com.example.common.WxDto.UserMessageDto;
 import com.example.common.common.Result;
 import com.example.common.pojo.Message;
@@ -10,10 +11,13 @@ import com.example.wx.service.MessageService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -32,6 +36,9 @@ public class MessageController {
 
     @Autowired
     private RedisComponent redisComponent;
+
+    @Value("${host.url}")
+    private String hostUrl;
     
     /**
      * 发送消息 - 只将消息放入Redis队列
@@ -40,27 +47,46 @@ public class MessageController {
     public Result sendMessage(@NotEmpty String toUser,
                               @NotEmpty String content,
                               @NotEmpty String type,
-                              String userId,
                               String fileUrl,
                               HttpServletRequest request) {
-//        String token = request.getHeader("Authorization");
-//        if (token == null) {
-//            return Result.error("未登录");
-//        }
-//        String currentUserId = JwtUtil.getUsernameFromToken(token);
+       String token = request.getHeader("Authorization");
+       if (token == null) {
+           return Result.error("未登录");
+       }
+       String currentUserId = JwtUtil.getUsernameFromToken(token);
 //
         Message message = new Message();
-        message.setUser(userId);
+        message.setUser(currentUserId);
         message.setTime(new Date());
         message.setToUser(toUser);
         message.setContent(content);
         message.setType(type);
         message.setStatus(0); // 未读状态
-        
-        if (fileUrl != null && !fileUrl.isEmpty()) {
-            message.setFileUrl(fileUrl);
+        System.out.println(fileUrl);
+
+        if (fileUrl != null && !fileUrl.isEmpty() && !fileUrl.equals("undefined")) {
+            // 使用正则表达式匹配日期目录和文件名部分
+            Pattern pattern = Pattern.compile(".*/files/message/(\\d+/[^/]+)");
+            Matcher matcher = pattern.matcher(fileUrl);
+            
+            if (matcher.find()) {
+                // 提取符合格式的日期目录和文件名（例如：20250415/xxxx.jpg）
+                String relativePath = matcher.group(1);
+                message.setFileUrl(relativePath);
+            } else {
+                // 如果没有匹配到预期格式，尝试原来的处理方式
+                String prefix = hostUrl + "/files/message/";
+                if (fileUrl.startsWith(prefix)) {
+                    // 移除前缀，只保存相对路径部分
+                    String relativePath = fileUrl.substring(prefix.length());
+                    message.setFileUrl(relativePath);
+                } else {
+                    // 如果没有前缀，直接保存
+                    message.setFileUrl(fileUrl);
+                }
+            }
         }
-        
+            
         // 保存消息到数据库
         messageService.save(message);
         
@@ -71,27 +97,27 @@ public class MessageController {
     }
     
     /**
-     * 获取用户消息列表
+     * 获取消息列表
      */
-    @GetMapping("/list/{pageNum}/{pageSize}")
-    public Result getUserMessagesList(@PathVariable int pageNum, 
-                                     @PathVariable int pageSize,
+    @GetMapping("/getList")
+    public Result getUserMessagesList(@RequestParam int pageNum,
+                                     @RequestParam int pageSize,
                                      HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         if (token == null) {
             return Result.error("未登录");
         }
         String currentUserId = JwtUtil.getUsernameFromToken(token);
-        Page<UserMessageDto> page = messageService.getUserMessagesList(currentUserId, pageNum, pageSize);
+        Page<MessageListDto> page = messageService.getUserMessagesList(currentUserId, pageNum, pageSize);
         return Result.success(page);
     }
     
     /**
      * 获取系统消息
      */
-    @GetMapping("/system/{pageNum}/{pageSize}")
-    public Result getSystemMessages(@PathVariable int pageNum,
-                                   @PathVariable int pageSize,
+    @GetMapping("/system")
+    public Result getSystemMessages(@RequestParam int pageNum,
+                                   @RequestParam int pageSize,
                                    HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         if (token == null) {
@@ -105,10 +131,10 @@ public class MessageController {
     /**
      * 获取与特定用户的聊天记录
      */
-    @GetMapping("/chat/{targetId}/{pageNum}/{pageSize}")
-    public Result getChatMessages(@PathVariable String targetId,
-                                 @PathVariable int pageNum,
-                                 @PathVariable int pageSize,
+    @GetMapping("/chat")
+    public Result getChatMessages(@RequestParam String targetId,
+                                 @RequestParam int pageNum,
+                                 @RequestParam int pageSize,
                                  HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         if (token == null) {
@@ -122,9 +148,9 @@ public class MessageController {
     /**
      * 获取订单消息
      */
-    @GetMapping("/order/{pageNum}/{pageSize}")
-    public Result getOrderMessages(@PathVariable int pageNum,
-                                  @PathVariable int pageSize,
+    @GetMapping("/order")
+    public Result getOrderMessages(@RequestParam int pageNum,
+                                  @RequestParam int pageSize,
                                   HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         if (token == null) {
@@ -138,8 +164,8 @@ public class MessageController {
     /**
      * 标记消息为已读
      */
-    @PostMapping("/read/{targetId}")
-    public Result markAsRead(HttpServletRequest request, @PathVariable String targetId) {
+    @PostMapping("/read")
+    public Result markAsRead(HttpServletRequest request, @RequestParam String targetId) {
         String token = request.getHeader("Authorization");
         if (token == null) {
             return Result.error("未登录");
@@ -205,36 +231,11 @@ public class MessageController {
             return Result.error("未登录");
         }
         String currentUserId = JwtUtil.getUsernameFromToken(token);
-        
-        int chatCount = messageService.getUnreadChatCount(currentUserId);
-        int systemCount = messageService.getUnreadSystemCount(currentUserId);
-        int orderCount = messageService.getUnreadOrderCount(currentUserId);
-        
-        UnreadCountDto countDto = new UnreadCountDto(chatCount, systemCount, orderCount);
-        return Result.success(countDto);
+
+        int allCount = messageService.getUnreadAllCount(currentUserId);
+        return Result.success(allCount);
     }
     
-    /**
-     * 未读消息数量DTO
-     */
-    private static class UnreadCountDto {
-        private int chatCount;
-        private int systemCount;
-        private int orderCount;
-        private int totalCount;
-        
-        public UnreadCountDto(int chatCount, int systemCount, int orderCount) {
-            this.chatCount = chatCount;
-            this.systemCount = systemCount;
-            this.orderCount = orderCount;
-            this.totalCount = chatCount + systemCount + orderCount;
-        }
-        
-        // Getters
-        public int getChatCount() { return chatCount; }
-        public int getSystemCount() { return systemCount; }
-        public int getOrderCount() { return orderCount; }
-        public int getTotalCount() { return totalCount; }
-    }
+
 }
 

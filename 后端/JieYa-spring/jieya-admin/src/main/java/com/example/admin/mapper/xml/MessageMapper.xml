@@ -12,11 +12,13 @@
         <result column="time" property="time" />
         <result column="FileUrl" property="FileUrl" />
         <result column="status" property="status"></result>
+        <result column="note_id" property="noteId"></result>
+        <result column="comment_id" property="commentId"></result>
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, user, to_user, content, type, time, FileUrl,status;
+        id, user, to_user, content, type, time, FileUrl,status,note_id,comment_id;
     </sql>
 
 </mapper>

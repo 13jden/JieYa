@@ -219,12 +219,11 @@ const _sfc_main = {
         }),
         k: common_vendor.f(availableDates.value, (date, index, i0) => {
           return {
-            a: common_vendor.t(date.split("-")[2]),
-            b: common_vendor.t(date.split("-")[1]),
-            c: common_vendor.t(date.split("-")[0].substr(2)),
-            d: index,
-            e: selectedDate.value === date ? 1 : "",
-            f: common_vendor.o(($event) => onDateChange(date), index)
+            a: common_vendor.t(date.split("-")[1]),
+            b: common_vendor.t(date.split("-")[2]),
+            c: index,
+            d: selectedDate.value === date ? 1 : "",
+            e: common_vendor.o(($event) => onDateChange(date), index)
           };
         }),
         l: common_vendor.f(timeSlots.value, (slot, index, i0) => {
@@ -248,5 +247,5 @@ const _sfc_main = {
     };
   }
 };
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-d02c37e6"], ["__file", "C:/Users/86182/Desktop/解压小程序/前端/JieYa/pages/venue_detail/venue_detail.vue"]]);
+const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-d02c37e6"], ["__file", "C:/Users/86182/Desktop/上班/解压小程序/前端/JieYa/pages/venue_detail/venue_detail.vue"]]);
 wx.createPage(MiniProgramPage);

@@ -7,7 +7,7 @@
               v-for="(item, index) in filelist" 
               :key="index"
               :data-index="index"
-              :class="{'dragging': isDragging && dragIndex.value === index}"
+              :class="{'dragging': isDragging && dragIndex === index}"
               :style="getItemStyle(index)"
               @touchstart="dragStart"
               @touchmove="dragMove"
@@ -83,6 +83,8 @@
 
 <script setup>
 import { ref, getCurrentInstance, onMounted } from 'vue';
+import { addNote, updateNote, getNoteDetail } from '@/api/note';
+
 const filePath = ref("");
 const title = ref("");
 const content = ref("");
@@ -96,15 +98,64 @@ const dragCurrentX = ref(0);
 const isDragging = ref(false);
 const dragElement = ref(null);
 const visibility = ref('public'); // 默认所有人可见
+const isEdit = ref(false); // 是否为编辑模式
+const postId = ref(''); // 笔记ID，编辑模式时使用
+const originalImageList = ref([]); // 原始图片列表，编辑模式时使用
 
 onMounted(() => {
-  // 页面加载时检查是否有草稿
-  checkDraft();
+  // 获取页面参数
+  const pages = getCurrentPages();
+  const currentPage = pages[pages.length - 1];
+  const options = currentPage.$page?.options;
+  
+  if (options && options.postId) {
+    // 编辑模式
+    postId.value = options.postId;
+    isEdit.value = true;
+    loadNoteDetail();
+  } else {
+    // 新增模式
+    // 页面加载时检查是否有草稿
+    checkDraft();
+  }
 });
+
+// 加载笔记详情
+async function loadNoteDetail() {
+  try {
+    uni.showLoading({
+      title: '加载中...'
+    });
+    
+    const result = await getNoteDetail(postId.value);
+    if (result.code === 200) {
+      const noteData = result.data;
+      title.value = noteData.title;
+      content.value = noteData.content;
+      selectedTags.value = noteData.tags || [];
+      filelist.value = noteData.imageUrls || [];
+      originalImageList.value = noteData.images || [];
+      visibility.value = noteData.visibility || 'public';
+    } else {
+      uni.showToast({
+        title: '获取笔记失败',
+        icon: 'none'
+      });
+    }
+  } catch (error) {
+    console.error('获取笔记详情失败:', error);
+    uni.showToast({
+      title: '获取笔记失败',
+      icon: 'none'
+    });
+  } finally {
+    uni.hideLoading();
+  }
+}
 
 function checkDraft() {
   try {
-    const draftData = wx.getStorageSync('noteDraft');
+    const draftData = uni.getStorageSync('noteDraft');
     if (draftData) {
       // 显示提示框
       uni.showModal({
@@ -123,7 +174,7 @@ function checkDraft() {
             });
           } else {
             // 用户点击新建笔记，清除草稿数据
-            wx.removeStorageSync('noteDraft');
+            uni.removeStorageSync('noteDraft');
             // 重置表单
             resetForm();
             uni.showToast({
@@ -151,7 +202,7 @@ function resetForm() {
 
 function loadDraft() {
   try {
-    const draftData = wx.getStorageSync('noteDraft');
+    const draftData = uni.getStorageSync('noteDraft');
     if (draftData) {
       title.value = draftData.title || '';
       content.value = draftData.content || '';
@@ -175,7 +226,7 @@ function saveDraft() {
       timestamp: Date.now()
     };
     
-    wx.setStorageSync('noteDraft', draftData);
+    uni.setStorageSync('noteDraft', draftData);
     
     uni.showToast({
       title: '草稿保存成功',
@@ -204,7 +255,7 @@ function previewNote() {
       isPreview: true // 标记为预览模式
     };
     
-    wx.setStorageSync('notePreview', previewData);
+    uni.setStorageSync('notePreview', previewData);
     
     // 跳转到note页面
     uni.navigateTo({
@@ -222,7 +273,7 @@ function previewNote() {
 
 function chooseFile() {
   uni.chooseImage({
-    count: 9,
+    count: 9 - filelist.value.length,
     success: (res) => {
       res.tempFilePaths.forEach(filePath => {
         filelist.value.push(filePath);
@@ -236,13 +287,15 @@ function chooseFile() {
 
 function removeImage(index) {
   filelist.value.splice(index, 1);
-  imagelist.value.splice(index, 1);
+  if (imagelist.value.length > index) {
+    imagelist.value.splice(index, 1);
+  }
 }
 
 function addTag() {
   if (newTag.value) {
     if (!selectedTags.value.includes(newTag.value)) {
-      selectedTags.value.push(`${newTag.value}`);
+      selectedTags.value.push(newTag.value);
       newTag.value = '';
     } else {
       uni.showToast({
@@ -315,18 +368,82 @@ function setVisibility(type) {
   visibility.value = type;
 }
 
-function loadPreviewData() {
-  try {
-    const previewData = wx.getStorageSync('notePreview');
-    if (previewData) {
-      noteData.value = previewData;
-    }
-  } catch (e) {
-    console.error('加载预览数据失败:', e);
+// 完成发布
+async function finish() {
+  if (!title.value) {
     uni.showToast({
-      title: '加载预览数据失败',
+      title: '请输入标题',
       icon: 'none'
     });
+    return;
+  }
+  
+  if (!content.value) {
+    uni.showToast({
+      title: '请输入内容',
+      icon: 'none'
+    });
+    return;
+  }
+  
+  if (filelist.value.length === 0) {
+    uni.showToast({
+      title: '请至少添加一张图片',
+      icon: 'none'
+    });
+    return;
+  }
+  
+  // 显示加载提示
+  uni.showLoading({
+    title: isEdit.value ? '更新中...' : '发布中...'
+  });
+  
+  try {
+    const noteData = {
+      title: title.value,
+      content: content.value,
+      tags: selectedTags.value,
+      visibility: visibility.value
+    };
+    
+    let result;
+    if (isEdit.value) {
+      // 编辑模式，找出新上传的本地图片和保留的原始图片
+      const newLocalImages = filelist.value.filter(item => item.startsWith('file://') || item.startsWith('/'));
+      result = await updateNote(postId.value, noteData, newLocalImages, originalImageList.value);
+    } else {
+      // 新增模式
+      result = await addNote(noteData, filelist.value);
+    }
+    
+    uni.hideLoading();
+    if (result.code === 200) {
+      uni.showToast({
+        title: isEdit.value ? '更新成功' : '发布成功',
+        icon: 'success'
+      });
+      
+      // 清空本地草稿
+      uni.removeStorageSync('noteDraft');
+      
+      // 延迟跳转，让用户看到成功提示
+      setTimeout(() => {
+        uni.navigateBack();
+      }, 1500);
+    } else {
+      uni.showToast({
+        title: result.msg || '操作失败',
+        icon: 'none'
+      });
+    }
+  } catch (error) {
+    uni.hideLoading();
+    uni.showToast({
+      title: '操作失败: ' + error.message,
+      icon: 'none'
+    });
+    console.error(isEdit.value ? '更新笔记失败:' : '发布笔记失败:', error);
   }
 }
 </script>

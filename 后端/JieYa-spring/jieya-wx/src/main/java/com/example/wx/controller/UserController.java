@@ -6,10 +6,14 @@ import com.example.common.common.Address;
 import com.example.common.common.ControllerTool;
 import com.example.common.common.Result;
 import com.example.common.constants.Constants;
+import com.example.common.pojo.Message;
 import com.example.common.pojo.User;
 import com.example.common.redis.RedisComponent;
+import com.example.common.utils.CopyTools;
 import com.example.common.utils.JwtUtil;
 import com.example.common.utils.StringTools;
+import com.example.wx.mapper.FocusMapper;
+import com.example.wx.mapper.UserActiveMapper;
 import com.example.wx.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +30,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -44,10 +49,19 @@ public class UserController {
     private UserService userService;
 
     @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
     private RedisComponent redisComponent;
 
     @Autowired
     private ControllerTool controllerTool;
+
+    @Autowired
+    private UserActiveMapper userActiveMapper;
+
+    @Autowired
+    private FocusMapper focusMapper;
 
     @Value("${upload.avatarPath}")
     private String avatarPath;
@@ -65,6 +79,11 @@ public class UserController {
         return Result.success(userService.searchByNickName(nickName));
     }
 
+    @RequestMapping("/search")
+    public Result<List<User>> searchUsers(@RequestParam String keyword) {
+        return Result.success(userService.searchByNickName(keyword));
+    }
+
     @RequestMapping("/register")
     public Result register(@RequestParam @NotEmpty @Email String email,
                            @RequestParam @NotEmpty @Size(max = 20) String nickName,
@@ -79,8 +98,11 @@ public class UserController {
         redisComponent.cleanCheckCode(checkCodeKey);
 
         String result = userService.register(email,nickName,password);
-        if(result.equals("注册成功"))
+        if(result.equals("注册成功")){
+            redisComponent.setMessage(new Message("system","admin", "用户："+email+"注册成功", "SYSTEM",new Date()));
             return Result.success(result);
+        }
+            
 
         else
             return Result.error(result);
@@ -107,6 +129,12 @@ public class UserController {
         return Result.success(tokenUserInfoDto);
     }
 
+    @RequestMapping("/detail")
+    public Result getUserDetail(@RequestParam @NotEmpty String userId) {
+        User user = userService.getById(userId);
+
+        return Result.success(user);
+    }
     /**
      * 自动登录接口
      * 根据token自动登录
@@ -124,7 +152,7 @@ public class UserController {
         }
         
         // 验证token是否有效
-        if (!JwtUtil.validateToken(token)) {
+        if (!jwtUtil.validateToken(token)) {
             return Result.error("token无效");
         }
         
@@ -175,7 +203,7 @@ public class UserController {
         }
         
         // 验证token
-        if (!JwtUtil.validateToken(token)) {
+        if (!jwtUtil.validateToken(token)) {
             return Result.error("token无效");
         }
         
@@ -209,6 +237,7 @@ public class UserController {
 
         //更新头像
         if (avatar != null && !avatar.isEmpty()) {
+            System.out.println("准备换头像");
             try {
                 // 生成唯一文件名
                 String fileName = System.currentTimeMillis() + "_" + avatar.getOriginalFilename();

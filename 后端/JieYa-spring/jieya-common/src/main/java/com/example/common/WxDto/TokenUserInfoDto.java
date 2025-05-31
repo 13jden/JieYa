@@ -1,10 +1,10 @@
 package com.example.common.WxDto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 
 import java.io.Serializable;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Data
 public class TokenUserInfoDto implements Serializable {
 
         private String userId;
@@ -12,102 +12,19 @@ public class TokenUserInfoDto implements Serializable {
         private String avatar;
         private Long expireAt;
         private String school;
+
         private String personIntruduction;
+
         private Boolean sex;
+
         private String birthday;
 
-    public String getSchool() {
-        return school;
-    }
+        private int likesCount;
 
-    public void setSchool(String school) {
-        this.school = school;
-    }
+        private String token;
 
-    public String getPersonIntruduction() {
-        return personIntruduction;
-    }
+        private Integer fansCount;
 
-    public void setPersonIntruduction(String personIntruduction) {
-        this.personIntruduction = personIntruduction;
-    }
-
-    public Boolean getSex() {
-        return sex;
-    }
-
-    public void setSex(Boolean sex) {
-        this.sex = sex;
-    }
-
-    public String getBirthday() {
-        return birthday;
-    }
-
-    public void setBirthday(String birthday) {
-        this.birthday = birthday;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getNickName() {
-        return nickName;
-    }
-
-    public void setNickName(String nickName) {
-        this.nickName = nickName;
-    }
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
-    }
-
-    public Long getExpireAt() {
-        return expireAt;
-    }
-
-    public void setExpireAt(Long expireAt) {
-        this.expireAt = expireAt;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public Integer getFansCount() {
-        return fansCount;
-    }
-
-    public void setFansCount(Integer fansCount) {
-        this.fansCount = fansCount;
-    }
-
-    public Integer getFocusCount() {
-        return focusCount;
-    }
-
-    public void setFocusCount(Integer focusCount) {
-        this.focusCount = focusCount;
-    }
-
-    private String token;
-
-    private Integer fansCount;
-
-    private Integer focusCount;
+        private Integer focusCount;
 
 }

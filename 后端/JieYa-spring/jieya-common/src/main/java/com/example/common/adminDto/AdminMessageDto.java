@@ -17,9 +17,10 @@ public class AdminMessageDto {
 
     private String content;
 
+
     private String type;
 
-    private Date time;
+    private Date postTime;
 
     private String FileUrl;
 

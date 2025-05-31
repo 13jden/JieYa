@@ -91,6 +91,9 @@ const _sfc_main = {
     common_vendor.onMounted(() => {
       getCode();
     });
+    common_vendor.onBeforeUnmount(() => {
+      utils_websocket.webSocketService.close();
+    });
     return (_ctx, _cache) => {
       return common_vendor.e({
         a: email.value,
@@ -110,5 +113,5 @@ const _sfc_main = {
     };
   }
 };
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-e4e4508d"], ["__file", "C:/Users/86182/Desktop/解压小程序/前端/JieYa/pages/login/login.vue"]]);
+const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-e4e4508d"], ["__file", "C:/Users/86182/Desktop/上班/解压小程序/前端/JieYa/pages/login/login.vue"]]);
 wx.createPage(MiniProgramPage);

@@ -10,6 +10,8 @@ public class Constants {
 
     public static String REDIS_KEY_CHECK_CODE =REDIS_KEY_PRE + "checkcode:";
 
+    public static final String REDIS_KEY_ACTIVE_MESSAGE = REDIS_KEY_PRE + "userActive:message:";
+
     public static final Integer LENGTH_10 = 10;
 
     public static final Integer REDIS_KEY_EXPIRES_ONE_DAY = 60000*60*24;
@@ -67,6 +69,7 @@ public class Constants {
 
     public static final String MESSAGE_QUEUE_KEY = "message:queue";
 
+    public static final String REDIS_KEY_NOTE_TEMP_IMAGE = REDIS_KEY_PRE +"temp:noteImage:";
 }
 
 

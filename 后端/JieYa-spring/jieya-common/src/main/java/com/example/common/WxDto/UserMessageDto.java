@@ -1,7 +1,9 @@
 package com.example.common.WxDto;
 
-import java.util.Date;
+import lombok.Data;
 
+import java.util.Date;
+@Data
 public class UserMessageDto {
 
     private String user;

@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "发现",
   "usingComponents": {
-    "item": "../../components/item/item"
+    "item": "../../components/item/item",
+    "uni-icons": "../../uni_modules/uni-icons/components/uni-icons/uni-icons"
   }
 }

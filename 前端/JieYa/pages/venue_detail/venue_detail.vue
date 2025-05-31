@@ -56,8 +56,8 @@
 						:class="{ active: selectedDate === date }"
 						@tap="onDateChange(date)"
 					>
-						<text class="date-day">{{ date.split('-')[2] }}</text>
-						<text class="date-date">{{ date.split('-')[1] }}/{{ date.split('-')[0].substr(2) }}</text>
+						<text class="date-date">{{ date.split('-')[1] }}/{{ date.split('-')[2] }}</text>
+						
 					</view>
 				</scroll-view>
 			</view>
@@ -510,21 +510,18 @@ const goToBooking = () => {
 		align-items: center;
 		justify-content: center;
 		width: 120rpx;
-		height: 120rpx;
+		height: 100rpx;
 		margin-right: 20rpx;
 		border-radius: 10rpx;
 		background-color: #f5f5f5;
 		transition: all 0.3s ease;
 		
-		.date-day {
-			font-size: 28rpx;
-			color: #666;
-		}
 		
 		.date-date {
-			font-size: 24rpx;
+			font-size: 28rpx;
 			color: #999;
-			margin-top: 10rpx;
+			margin-top: 0rpx;
+			height: 30rpx;
 		}
 		
 		&.active {

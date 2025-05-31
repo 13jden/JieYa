@@ -49,6 +49,10 @@ user不为空的是用户消息，为空则为系统消息
 
     private Date time;
 
+    private String noteId;
+
+    private int commentId;
+
     /**
      * 图片/视频
      */
@@ -57,5 +61,12 @@ user不为空的是用户消息，为空则为系统消息
 
     private int status;
 
-
+    public Message(String user, String toUser, String content, String type, Date time) {
+        this.user = user;
+        this.toUser = toUser;
+        this.content = content;
+        this.type = type;
+        this.time = time;
+    }
+    public Message(){}
 }

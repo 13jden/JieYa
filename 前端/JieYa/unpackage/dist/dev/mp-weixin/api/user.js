@@ -42,15 +42,30 @@ function login(data) {
     return res;
   });
 }
+function getDetail(userId) {
+  return api_request.request({
+    url: "/user/detail",
+    method: "GET",
+    params: {
+      userId
+    }
+  }).then((res) => {
+    return res;
+  });
+}
 function updateUserInfo(data, avatarFile) {
+  const formData = { ...data };
+  if (formData.sex !== void 0) {
+    formData.sex = String(formData.sex);
+  }
   if (avatarFile && avatarFile.path) {
     return api_request.request({
       url: "/user/update",
       method: "POST",
       filePath: avatarFile.path,
       name: "avatar",
-      formData: data
-      // 其他数据作为formData发送
+      formData
+      // 使用处理后的formData
     }).then((res) => {
       if (res.code === 1) {
         updateLocalUserInfo(data, res.data);
@@ -64,7 +79,8 @@ function updateUserInfo(data, avatarFile) {
       header: {
         "content-type": "application/x-www-form-urlencoded"
       },
-      data
+      data: formData
+      // 使用处理后的formData
     }).then((res) => {
       if (res.code === 1) {
         updateLocalUserInfo(data, res.data);
@@ -103,7 +119,18 @@ function updateLocalUserInfo(updatedData, responseData) {
     console.error("更新本地用户信息失败:", error);
   }
 }
+function searchUsers(keyword) {
+  return api_request.request({
+    url: "/user/search",
+    method: "GET",
+    params: {
+      keyword
+    }
+  });
+}
+exports.getDetail = getDetail;
 exports.getVerificationCode = getVerificationCode;
 exports.login = login;
 exports.register = register;
+exports.searchUsers = searchUsers;
 exports.updateUserInfo = updateUserInfo;

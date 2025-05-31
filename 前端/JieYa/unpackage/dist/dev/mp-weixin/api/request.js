@@ -10,6 +10,14 @@ function request(options) {
   const queryString = options.params ? objectToQueryString(options.params) : "";
   return new Promise((resolve, reject) => {
     const token = common_vendor.index.getStorageSync("token");
+    if (token == null) {
+      setTimeout(() => {
+        common_vendor.index.reLaunch({
+          url: "/pages/login/login"
+        });
+      }, 1e3);
+      return reject({ code: 401, message: "未登录，请先登录" });
+    }
     const header = {
       ...options.header,
       "Authorization": token ? `${token}` : ""
@@ -23,7 +31,7 @@ function request(options) {
         formData: options.formData || {},
         header,
         success: (res) => {
-          if (res.statusCode === 500) {
+          if (res.statusCode === 50) {
             handleUnauthorized();
             reject({ code: 500, message: "登录已过期，请重新登录" });
             return;
@@ -57,21 +65,36 @@ function request(options) {
         }
       });
     } else {
-      if (!header["content-type"]) {
-        header["content-type"] = options.method === "GET" ? "application/x-www-form-urlencoded" : "application/json";
+      if (!header["content-type"] && !header["Content-Type"]) {
+        header["content-type"] = "application/x-www-form-urlencoded";
       }
       let data = options.data;
-      if (header["content-type"] === "application/x-www-form-urlencoded" && typeof data === "object") {
-        let formData = "";
-        for (let key in data) {
+      let contentType = header["content-type"] || header["Content-Type"] || "";
+      contentType = contentType.toLowerCase();
+      if (contentType.includes("application/x-www-form-urlencoded") && typeof data === "object" && data !== null) {
+        const processedData = {};
+        for (const key in data) {
           if (data.hasOwnProperty(key)) {
+            if (Array.isArray(data[key])) {
+              processedData[key] = JSON.stringify(data[key]);
+            } else if (data[key] !== null && data[key] !== void 0) {
+              processedData[key] = data[key];
+            }
+          }
+        }
+        let formData = "";
+        for (let key in processedData) {
+          if (processedData.hasOwnProperty(key)) {
             if (formData !== "") {
               formData += "&";
             }
-            formData += encodeURIComponent(key) + "=" + encodeURIComponent(data[key]);
+            formData += encodeURIComponent(key) + "=" + encodeURIComponent(processedData[key] === null ? "" : processedData[key]);
           }
         }
         data = formData;
+        console.log("表单数据:", data);
+      } else if (contentType.includes("application/json") && typeof data === "object") {
+        console.log("JSON数据:", data);
       }
       common_vendor.index.request({
         url: BASE_URL + options.url + queryString,

@@ -9,11 +9,14 @@ import com.example.common.pojo.Message;
 import com.example.admin.WebSocketService.MessageProducerService;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -32,6 +35,9 @@ public class MessageController {
     @Autowired
     private MessageService messageService;
 
+    @Value("${host.url}")
+    private String hostUrl;
+
     @PostMapping("/send")
     public Result sendMessage(@NotEmpty String toUser,
                                String content,
@@ -43,8 +49,27 @@ public class MessageController {
         message.setTime(new Date());
         message.setToUser(toUser);
         message.setContent(content);
-        if(fileUrl!=null)
-            message.setFileUrl(fileUrl);
+        if (fileUrl != null && !fileUrl.isEmpty() && !fileUrl.equals("undefined")) {
+            // 使用正则表达式匹配日期目录和文件名部分
+            Pattern pattern = Pattern.compile(".*/files/message/(\\d+/[^/]+)");
+            Matcher matcher = pattern.matcher(fileUrl);
+            
+            if (matcher.find()) {
+                String relativePath = matcher.group(1);
+                message.setFileUrl(relativePath);
+            } else {
+                // 如果没有匹配到预期格式，尝试原来的处理方式
+                String prefix = hostUrl + "/files/message/";
+                if (fileUrl.startsWith(prefix)) {
+                    // 移除前缀，只保存相对路径部分
+                    String relativePath = fileUrl.substring(prefix.length());
+                    message.setFileUrl(relativePath);
+                } else {
+                    // 如果没有前缀，直接保存
+                    message.setFileUrl(fileUrl);
+                }
+            }
+        }
         message.setType(type);
         // 生产消息
         messageProducerService.produceMessage(message);

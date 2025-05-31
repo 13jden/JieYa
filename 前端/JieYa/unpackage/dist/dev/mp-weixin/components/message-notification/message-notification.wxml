@@ -1,0 +1,1 @@
+<view wx:if="{{a}}" class="notification data-v-33995313" bindtap="{{d}}"><view class="notification-content data-v-33995313"><text class="notification-title data-v-33995313">{{b}}</text><text class="notification-message data-v-33995313">{{c}}</text></view></view>

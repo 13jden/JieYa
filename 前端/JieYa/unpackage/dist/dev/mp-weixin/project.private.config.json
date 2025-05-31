@@ -8,6 +8,20 @@
     "miniprogram": {
       "list": [
         {
+          "name": "pages/user/user",
+          "pathName": "pages/user/user",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/friendMessage/friendMessage",
+          "pathName": "pages/friendMessage/friendMessage",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
           "name": "pages/updateMe/updateMe",
           "pathName": "pages/updateMe/updateMe",
           "query": "",

@@ -1,11 +1,11 @@
 <template>
 	<view class="title-box">
+    <image src="../../static/logo.png" class="image1" mode="aspectFill"></image>
 		<view class="name">
-			解鸭呀
+			轻屿jieya
 		</view>
-		<image src="../../static/logo.png" class="image1" mode="aspectFill"></image>
 		
-		<image src="/static/search.png" mode="aspectFit"></image>
+		<image src="/static/search.png" mode="aspectFit" @click="goToSearch"></image>
 	</view>
 	
 	<!-- 情绪分类-滑动设计 -->
@@ -21,32 +21,157 @@
 		</view>
 	</scroll-view>
 
-    <view class="masonry">
-      <view class="box" v-for="(list, index) in lists" :key="index" @click="goToNote(list.nid)">
-        <item :username="list.username" :title="list.title" :image="list.coverImage" :userimage="list.userimage"></item>
+    <!-- 使用scroll-view包裹瀑布流区域，支持下拉刷新 -->
+    <scroll-view 
+      class="content-scroll" 
+      scroll-y="true"
+      refresher-enabled="true"
+      :refresher-triggered="isRefreshing"
+      @refresherrefresh="onRefresh"
+      @scrolltolower="onLoadMore"
+    >
+      <view class="masonry">
+        <view class="box" v-for="(note, index) in noteList" :key="index" @click="goToNote(note.id)">
+          <item 
+            :username="note.user ? note.user.nickName : '未知用户'" 
+            :title="note.title" 
+            :image="note.coverImage" 
+            :userimage="note.user ? note.user.avatar : ''" 
+            :likeCount="note.likeCount || 0"
+          ></item>
+        </view>
       </view>
+      <view v-if="loading" class="loading">加载中...</view>
+      <view v-if="noMoreData" class="no-more">没有更多了</view>
+    </scroll-view>
+    
+    <!-- 回到顶部按钮 -->
+    <view class="back-to-top" v-if="showBackToTop" @click="scrollToTop">
+      <uni-icons type="top" size="30" color="#1a73e8"></uni-icons>
     </view>
-    <view v-if="noMoreData" class="no-more" >没有更多了</view> 
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { onPullDownRefresh, onReachBottom, onPageScroll } from '@dcloudio/uni-app';
+import { getNoteList } from '@/api/note';
 
-const lists = ref([]);
+// 页面数据
+const noteList = ref([]);
 const categories = ref(['全部', '开心', '难过', '焦虑', '兴奋', '平静', '孤独', '感恩']);
 const activeCategory = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(10);
+const loading = ref(false);
+const noMoreData = ref(false);
+const showBackToTop = ref(false);
+const scrollTop = ref(0);
+// 新增刷新状态控制
+const isRefreshing = ref(false);
 
-function loadListsFromSession() {
-const storedLists = wx.getStorageSync('lists');
-  if (storedLists) {
-    lists.value = JSON.parse(storedLists); // 解析存储的数据
+// 页面加载时获取笔记列表
+onMounted(() => {
+  fetchNoteList();
+});
+
+// 监听页面滚动
+onPageScroll((e) => {
+  scrollTop.value = e.scrollTop;
+  showBackToTop.value = scrollTop.value > 300;
+});
+
+// 获取笔记列表
+async function fetchNoteList(append = false) {
+  if (loading.value) return;
+  
+  try {
+    loading.value = true;
+    
+    // 获取选中的情绪类型（如果不是"全部"）
+    const emotion = activeCategory.value === 0 ? undefined : categories.value[activeCategory.value];
+    
+    const params = {
+      pageNum: currentPage.value,
+      pageSize: pageSize.value,
+      emotion: emotion
+    };
+    
+    const res = await getNoteList(params);
+    
+    if (res.code === 1) {
+      if (append) {
+        noteList.value = [...noteList.value, ...res.data.records];
+      } else {
+        noteList.value = res.data.records;
+      }
+      
+      noMoreData.value = res.data.records.length < pageSize.value;
+      
+      // 如果是第一页，而且没有数据，显示无数据提示
+      if (currentPage.value === 1 && noteList.value.length === 0) {
+        noMoreData.value = true;
+      }
+    } else {
+      uni.showToast({
+        title: '获取笔记失败',
+        icon: 'none'
+      });
+    }
+  } catch (error) {
+    console.error('获取笔记列表失败:', error);
+    uni.showToast({
+      title: '网络错误，请重试',
+      icon: 'none'
+    });
+  } finally {
+    loading.value = false;
+    isRefreshing.value = false; // 结束刷新状态
   }
 }
 
-// 页面加载时读取数据
-onMounted(() => {
-  loadListsFromSession();
+// scroll-view的下拉刷新处理
+function onRefresh() {
+  console.log('scroll-view 下拉刷新触发');
+  isRefreshing.value = true; // 设置刷新状态为true
+  currentPage.value = 1;
+  noMoreData.value = false;
+  fetchNoteList(false);
+}
+
+// scroll-view的加载更多处理
+function onLoadMore() {
+  console.log('滚动到底部，加载更多');
+  if (!loading.value && !noMoreData.value) {
+    currentPage.value++;
+    fetchNoteList(true);
+  }
+}
+
+// 下拉刷新 (页面级别的下拉刷新，如果使用scroll-view可以忽略)
+onPullDownRefresh(() => {
+  console.log('页面下拉刷新触发');
+  currentPage.value = 1;
+  noMoreData.value = false;
+  fetchNoteList(false);
 });
+
+// 上拉加载更多 (页面级别的加载更多，如果使用scroll-view可以忽略)
+onReachBottom(() => {
+  if (!noMoreData.value) {
+    currentPage.value++;
+    fetchNoteList(true);
+  }
+});
+
+// 选择分类
+function selectCategory(index) {
+  if (activeCategory.value === index) return;
+  
+  activeCategory.value = index;
+  currentPage.value = 1;
+  noMoreData.value = false;
+  fetchNoteList(false);
+}
 
 // 跳转到笔记详情
 function goToNote(noteId) {
@@ -55,12 +180,19 @@ function goToNote(noteId) {
   });
 }
 
-// 选择分类
-function selectCategory(index) {
-  activeCategory.value = index;
-  // 这里可以添加根据分类筛选数据的逻辑
-  console.log('选择分类:', categories.value[index]);
-  // TODO: 根据分类加载笔记数据
+// 回到顶部
+function scrollToTop() {
+  uni.pageScrollTo({
+    scrollTop: 0,
+    duration: 300
+  });
+}
+
+// 跳转到搜索页面
+function goToSearch() {
+  uni.navigateTo({
+    url: '/pages/search/search'
+  });
 }
 </script>
 
@@ -75,6 +207,7 @@ function selectCategory(index) {
   position: sticky;
   top: 0;
   z-index: 100;
+  height: 60rpx;
   
   .name {
     font-size: 36rpx;
@@ -86,19 +219,23 @@ function selectCategory(index) {
   }
   
   .image1 {
-    width: 120rpx;
-    height: 120rpx;
-    border-radius: 60rpx;
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+    position: relative;
+    width: 80rpx;
+    height: 80rpx;
+    border-radius: 50%;
+    object-fit: cover;
+    z-index: -1;
+    padding: 0;  /* 移除内边距让图像填满容器 */
+    transform: scale(1.15);  /* 放大图像但保持容器尺寸 */
+    transform-origin: center;
   }
   
   image {
-    width: 45rpx;
-    height: 45rpx;
+    width: 50rpx;
+    height: 50rpx;
     padding: 10rpx;
     background-color: #f8f9fa;
     border-radius: 50%;
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -109,7 +246,7 @@ function selectCategory(index) {
   padding: 20rpx 0;
   background-color: #fff;
   position: sticky;
-  top: 160rpx;
+  top: 130rpx;
   z-index: 90;
 }
 
@@ -165,6 +302,28 @@ function selectCategory(index) {
   }
 }
 
+.loading {
+  text-align: center;
+  padding: 20rpx;
+  color: #666;
+  font-size: 26rpx;
+}
+
+.back-to-top {
+  position: fixed;
+  bottom: 100rpx;
+  right: 40rpx;
+  width: 80rpx;
+  height: 80rpx;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
 .no-more {
   height: 100rpx;
   text-align: center;
@@ -176,4 +335,23 @@ function selectCategory(index) {
   border-radius: 12rpx;
   margin: 20rpx;
 }
+
+/* 新增 scroll-view 相关样式 */
+.content-scroll {
+  height: calc(100vh - 220rpx); /* 减去顶部组件的高度 */
+  width: 100%;
+  background-color: #f8f9fa;
+}
 </style>
+
+<script>
+export default {
+  // 正确的配置方式
+  options: {
+    enablePullDownRefresh: true,
+    backgroundTextStyle: 'dark'
+  },
+  // 设置导航栏样式
+  navigationStyle: 'custom'
+}
+</script>

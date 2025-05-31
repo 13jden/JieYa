@@ -1,14 +1,12 @@
 package com.example.common.redis;
+import com.example.common.WxDto.ActiveMessageDto;
 import com.example.common.WxDto.PropRentalDto;
 import com.example.common.WxDto.VenueBookingDto;
 import com.example.common.adminDto.PropDto;
 import com.example.common.adminDto.VenueDto;
 import com.example.common.constants.Constants;
 import com.example.common.WxDto.TokenUserInfoDto;
-import com.example.common.pojo.Banner;
-import com.example.common.pojo.Category;
-import com.example.common.pojo.Message;
-import com.example.common.pojo.Prop;
+import com.example.common.pojo.*;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
@@ -283,5 +281,40 @@ public class RedisComponent {
      */
     public void setMessage(Message message) {
         redisUtils.lpush(Constants.MESSAGE_QUEUE_KEY, message,Constants.REDIS_KEY_EXPIRES_TIME);
+    }
+
+    public void saveNoTokenInfo(String pre,String userId) {
+        redisUtils.set(pre+userId,Constants.REDIS_KEY_EXPIRES_ONE_DAY);
+    }
+
+    public boolean getNoTokenInfo(String key) {
+        return  (redisUtils.get(key)!=null);
+    }
+
+    public void deleteNoTokenInfo(String invalidTokenKeyPrefix, String userId) {
+        redisUtils.delete(invalidTokenKeyPrefix+userId);
+    }
+
+    public void setTempNoteImage(NodeImage noteImage) {
+        redisUtils.setex(Constants.REDIS_KEY_NOTE_TEMP_IMAGE+noteImage.getNodeId()+noteImage.getSort(),noteImage,Constants.REDIS_KEY_EXPIRES_TIME);
+    }
+
+    public NodeImage getTempNoteImage(String nodeId, Integer sort){
+        return (NodeImage) redisUtils.get(Constants.REDIS_KEY_NOTE_TEMP_IMAGE+nodeId+sort);
+    }
+
+    public void deleteTempNoteImage(String nodeId,Integer sort){
+        redisUtils.delete(Constants.REDIS_KEY_NOTE_TEMP_IMAGE+nodeId+sort);
+    }
+
+    public void setUserActiveMessage(String key, ActiveMessageDto message) {
+        redisUtils.setex(key , message ,Constants.REDIS_KEY_EXPIRES_TIME*10);//十分之失效
+    }
+
+    public ActiveMessageDto getUserActiveMessage(String key){
+        return (ActiveMessageDto) redisUtils.get(key);
+    }
+    public void deleteUserActiveMessage(String key){
+        redisUtils.delete(key);
     }
 }

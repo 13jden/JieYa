@@ -19,12 +19,15 @@
         <result column="theme" property="theme" />
         <result column="notice_info" property="noticeInfo" />
         <result column="avatar" property="avatar" />
-
+        <result column="like_count" property="likeCount" />
+        <result column="collect_count" property="collectCount" />
+        <result column="fans_count" property="fansCount" />
+        <result column="focus_count" property="focusCount" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        user_id, nick_name, email, password, sex, birthday, school, person_intruduction, join_time, last_login_time, last_login_ip, status, theme, notice_info,avatar
+        user_id, nick_name, email, password, sex, birthday, school, person_intruduction, join_time, last_login_time, last_login_ip, status, theme, notice_info,avatar,like_count,collect_count,fans_count,focus_count   
     </sql>
 
 </mapper>

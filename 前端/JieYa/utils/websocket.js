@@ -8,8 +8,10 @@ class WebSocketService {
     this.reconnectTimer = null;
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
-    this.reconnectInterval = 5000;
-    this.pingInterval = 15000;
+    this.reconnectInterval = 3000;
+    this.pingInterval = 10000;
+    this.lastHeartbeatResponse = Date.now();
+    this.manualDisconnect = false;
     this.listeners = {
       open: [],
       message: [],
@@ -26,19 +28,19 @@ class WebSocketService {
       return;
     }
     
+    this.manualDisconnect = false;
+    
     this.close();
     this.url = url.replace('http://', 'ws://').replace('https://', 'wss://');
     this.token = token;
     
-    console.log("正在连接WebSocket...", this.url);
+    const wsUrl = `${this.url}?token=${this.token}`;
+      
+    console.log("正在连接WebSocket...", wsUrl);
     
     try {
-      // 创建WebSocket连接
       this.socketTask = uni.connectSocket({
-        url: this.token ? `${this.url}?token=${this.token}` : this.url,
-        header: {
-          'Authorization': `Bearer ${this.token}`
-        },
+        url: wsUrl,
         success: () => {
           console.log("WebSocket连接请求已发送");
         },
@@ -49,7 +51,6 @@ class WebSocketService {
         }
       });
       
-      // 监听WebSocket事件
       this.socketTask.onOpen(this._onOpen.bind(this));
       this.socketTask.onMessage(this._onMessage.bind(this));
       this.socketTask.onClose(this._onClose.bind(this));
@@ -65,7 +66,10 @@ class WebSocketService {
     console.log("WebSocket连接已打开:", res);
     this.connected = true;
     this.reconnectAttempts = 0;
+    this.lastHeartbeatResponse = Date.now();
+    
     this._startHeartbeat();
+    
     this._triggerEvent("open", res);
   }
   
@@ -80,8 +84,16 @@ class WebSocketService {
           // 如果不是JSON格式，保持原样
         }
       }
-      console.log("收到WebSocket消息:", data);
-      this._triggerEvent("message", data);
+      console.log("WebSocket收到原始消息:", data);
+      
+      if (data.type === "heartbeat_response" || data.type === "HEARTBEAT" || data.type === "pong") {
+        console.log("收到心跳响应");
+        this.lastHeartbeatResponse = Date.now();
+        return;
+      }
+      
+      // 处理消息
+      this.processReceivedMessage(data);
     } catch (e) {
       console.error("处理WebSocket消息出错:", e);
     }
@@ -89,11 +101,18 @@ class WebSocketService {
   
   // 连接关闭回调
   _onClose(res) {
-    console.log("WebSocket连接已关闭:", res);
+    console.log("WebSocket连接已关闭, 状态码:", res.code, "原因:", res.reason);
     this.connected = false;
     this._stopHeartbeat();
     this._triggerEvent("close", res);
-    this._attemptReconnect();
+    
+    if (!this.manualDisconnect) {
+      console.log("非手动断开，尝试重连...");
+      this._attemptReconnect();
+    } else {
+      console.log("手动断开连接，不进行重连");
+      this.manualDisconnect = false;
+    }
   }
   
   // 连接错误回调
@@ -112,6 +131,8 @@ class WebSocketService {
     
     try {
       const message = typeof data === "string" ? data : JSON.stringify(data);
+      console.log("发送WebSocket消息:", data);
+      
       this.socketTask.send({
         data: message,
         success: () => {
@@ -132,8 +153,10 @@ class WebSocketService {
     }
   }
   
-  // 关闭连接
+  // 主动关闭连接
   close() {
+    this.manualDisconnect = true;
+    
     this._stopHeartbeat();
     clearTimeout(this.reconnectTimer);
     
@@ -166,7 +189,16 @@ class WebSocketService {
     this._stopHeartbeat();
     this.pingTimer = setInterval(() => {
       if (this.connected) {
-        this.send({ type: "heartbeat", timestamp: Date.now() });
+        const now = Date.now();
+        if (now - this.lastHeartbeatResponse > 45000) {
+          console.warn("超过45秒未收到心跳响应，主动重连...");
+          this.close();
+          this._attemptReconnect();
+          return;
+        }
+        
+        this.send({ type: "heartbeat" });
+        console.log("已发送心跳消息");
       }
     }, this.pingInterval);
   }
@@ -235,6 +267,164 @@ class WebSocketService {
   // 检查是否已连接
   isConnected() {
     return this.connected;
+  }
+
+  _processMessage(data) {
+    // 如果是聊天消息
+    if (data && (data.type === 'chat' || data.type === 'USER-USER' || 
+        data.type === 'ADMIN-USER' || data.type === 'SYSTEM-USER' || 
+        data.type === 'ORDER-USER')) {
+      
+      console.log('收到聊天消息:', data);
+      
+      // 触发聊天事件
+      this._triggerEvent('chat', data);
+      
+      // 同时触发通用消息事件
+      this._triggerEvent('message', data);
+      
+      // 显示系统通知
+      uni.showToast({
+        title: `收到新消息: ${data.content || ''}`,
+        icon: 'none',
+        duration: 3000,
+        position: 'top'
+      });
+    } else {
+      // 其他类型消息
+      this._triggerEvent('message', data);
+    }
+  }
+
+  // 在WebSocketService类中添加处理消息的公共方法
+  processReceivedMessage(message) {
+    console.log("WebSocketService处理消息:", message);
+    
+    // 如果是心跳包，直接返回
+    if (message.type === "heartbeat_response" || message.type === "HEARTBEAT" || message.type === "pong") {
+      return;
+    }
+    
+    // 检查当前是否在聊天窗口，如果是，且是同一个用户，则不显示通知
+    const shouldShowNotification = !this.isCurrentlyChatting(message);
+    
+    // 只在非当前聊天对象的情况下显示通知
+    if (shouldShowNotification) {
+      this.showSimpleNotification(message);
+    }
+    
+    // 触发chat事件供App.vue使用
+    if (message.type === "USER-USER" || 
+        message.type === "ADMIN-USER" || 
+        message.type === "SYSTEM-USER" || 
+        message.type === "ORDER-USER" || 
+        message.type === "chat") {
+      this._triggerEvent("chat", message);
+    }
+    
+    // 更新角标
+    this.updateBadgeIfNeeded();
+  }
+
+  // 添加一个方法检查是否当前正在与该用户聊天
+  isCurrentlyChatting(message) {
+    try {
+      // 获取当前页面
+      const pages = getCurrentPages();
+      if (pages.length === 0) return false;
+      
+      const currentPage = pages[pages.length - 1];
+      
+      // 检查是否在聊天页面
+      if (currentPage.route !== 'pages/friendMessage/friendMessage') {
+        return false;
+      }
+      
+      // 获取当前正在聊天的用户ID
+      const targetUserId = currentPage.options && currentPage.options.userId;
+      if (!targetUserId) return false;
+      
+      // 检查消息发送者是否是当前聊天对象
+      const messageSenderId = message.user || message.userId;
+      return targetUserId === messageSenderId || 
+             (targetUserId === 'admin' && message.type === 'ADMIN-USER');
+    } catch (e) {
+      console.error('检查当前聊天状态出错:', e);
+      return false;
+    }
+  }
+
+  // 添加简单的通知方法
+  showSimpleNotification(message) {
+    let title = '';
+    let content = message.content || '';
+    
+    if (message.type === 'USER-USER') {
+      title = message.userName || '好友消息';
+    } else if (message.type === 'SYSTEM-USER') {
+      title = '系统消息';
+    } else if (message.type === 'ORDER-USER') {
+      title = '订单消息';
+    } else if (message.type === 'ADMIN-USER') {
+      title = '管理员消息';
+    } else {
+      title = '新消息';
+    }
+    
+    // 确保通知在主线程显示
+    setTimeout(() => {
+      uni.showToast({
+        title: `${title}: ${content}`,
+        icon: 'none',
+        duration: 3000,
+        position: 'top'
+      });
+    }, 0);
+  }
+
+  // 角标更新备用方法
+  updateBadgeIfNeeded() {
+    // 请求未读消息数
+    uni.request({
+      url: 'http://localhost:8081/message/unread/count',
+      method: 'GET',
+      header: {
+        'Authorization': uni.getStorageSync('token')
+      },
+      success: (res) => {
+        if (res.statusCode === 200 && res.data.code === 1) {
+          const count = res.data.data || 0;
+          
+          // 获取当前页面
+          const pages = getCurrentPages();
+          if (pages.length === 0) return;
+          
+          const currentPage = pages[pages.length - 1];
+          const tabBarPages = [
+            'pages/index/index',
+            'pages/find/find',
+            'pages/publish/publish',
+            'pages/friend/friend',
+            'pages/word/word'
+          ];
+          
+          const isTabBarPage = tabBarPages.some(path => currentPage.route === path);
+          
+          if (isTabBarPage) {
+            if (count > 0) {
+              uni.setTabBarBadge({
+                index: 3,
+                text: count.toString()
+              });
+            } else {
+              uni.removeTabBarBadge({
+                index: 3
+              });
+            }
+          }
+        }
+      }
+    });
   }
 }
 

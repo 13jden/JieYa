@@ -3,7 +3,7 @@
     <el-container>
       <!-- 侧边栏 -->
       <el-aside width="200px" class="sidebar">
-        <div class="logo"><img src="@/assets/logo.png" class="logoImgage" />JieYa后台管理</div>
+        <div class="logo"><img src="@/assets/logo.png" class="logoImgage" />轻屿JieYa后台管理</div>
         <el-menu
           :default-active="activeMenu"
           class="el-menu-vertical"
@@ -274,7 +274,7 @@ onMounted(() => {
     websocket.addListener('connect', handleWsConnect)
     websocket.addListener('message', handleWsMessage)
     // 添加消息计数刷新监听器
-    websocket.addListener('refreshMessageCounts', fetchMessageCounts)
+    // websocket.addListener('refreshMessageCounts', fetchMessageCounts)
     
     // 如果已经连接，则更新状态
     if (websocket.connected) {
@@ -322,7 +322,7 @@ onMounted(() => {
   align-items: center;
   text-align: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: bold;
   color: #fff;
   background-color: #263445;

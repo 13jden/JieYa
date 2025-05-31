@@ -7,6 +7,8 @@ import com.example.common.utils.CopyTools;
 import com.example.common.utils.JwtUtil;
 import com.example.common.utils.StringTools;
 import com.example.common.WxDto.TokenUserInfoDto;
+import com.example.wx.mapper.FocusMapper;
+import com.example.wx.mapper.UserActiveMapper;
 import com.example.wx.mapper.UserMapper;
 import com.example.wx.service.UserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -34,6 +36,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private RedisComponent redisComponent;
 
     @Autowired
+    private UserActiveMapper userActiveMapper;
+
+    @Autowired
+    private FocusMapper focusMapper;
+
+    @Autowired
     private JwtUtil jwtUtil;
 
     @Value("${host.url}")
@@ -41,7 +49,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public List<User> searchByNickName(String nickName) {
-        return userMapper.searchByNickName(nickName);  // 调用 Mapper 中的查询方法
+        List<User> userList = userMapper.searchByNickName(nickName);
+        for(User user:userList){
+            user.setAvatar(hostUrl + "/images/avatar/" + user.getAvatar());
+        }
+        return userList;  // 调用 Mapper 中的查询方法
     }
 
     @Override
@@ -87,7 +99,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         tokenUserInfoDto.setSchool(user.getSchool());
         tokenUserInfoDto.setPersonIntruduction(user.getPersonIntruduction());
         tokenUserInfoDto.setSex(user.getSex());
-        tokenUserInfoDto.setBirthday(user.getBirthday());   
+        tokenUserInfoDto.setBirthday(user.getBirthday());
+        tokenUserInfoDto.setFansCount(focusMapper.getUserFansCount(user.getUserId()));
+        tokenUserInfoDto.setFocusCount(focusMapper.getUserFocusCount(user.getUserId()));
+        tokenUserInfoDto.setLikesCount(userActiveMapper.getUserLikesCount(user.getUserId()));
         try {
             // 生成JWT token
             String token = JwtUtil.generateToken(user.getUserId().toString());

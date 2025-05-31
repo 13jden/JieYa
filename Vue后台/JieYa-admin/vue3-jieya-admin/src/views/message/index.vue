@@ -422,11 +422,11 @@ const handleWebSocketMessage = (data) => {
         // 用户聊天消息
         handleUserChatMessage(data)
         break
-      case 'SYSTEM':
+      case 'SYSTEM-ADMIN':
         // 系统消息
         handleSystemMessage(data)
         break
-      case 'ORDER':
+      case 'ORDER-ADMIN':
         // 订单消息
         handleOrderMessage(data)
         break
@@ -567,6 +567,7 @@ const handleSystemMessage = (message) => {
   if (activeType.value === 'system') {
     // 在系统消息页面，刷新消息列表
     loadSystemMessages();
+    fetchMessageCounts();
   }
 }
 
@@ -575,6 +576,7 @@ const handleOrderMessage = (message) => {
   if (activeType.value === 'order') {
     // 在订单消息页面，刷新消息列表
     loadOrderMessages();
+    fetchMessageCounts();
   }
 }
 
@@ -644,7 +646,11 @@ const loadUserList = async (loadMore = false) => {
         if (userList.value.length > 0 && !activeUser.value) {
           activeUser.value = userList.value[0].user
           loadUserMessages(userList.value[0].user)
+          userList.value[0].notReadCount = 0;
         }
+
+   
+
       }
       userTotal.value = res.data.total || 0
     }
@@ -660,9 +666,10 @@ const selectUser = (userId) => {
   chatPageNum.value = 1 // 重置聊天分页
   
   // 立即更新用户列表中的未读标记
-  const userIndex = userList.value.findIndex(u => u.user === userId)
+  const userIndex = userList.value.findIndex(u => u.user === userId);
   if (userIndex !== -1) {
-    userList.value[userIndex].unreadCount = 0
+    userList.value[userIndex].notReadCount = 0;
+    console.log("用户列表:"+userList.value[userIndex].notReadCount);
   }
   
   // 加载用户消息

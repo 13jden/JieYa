@@ -91,6 +91,10 @@ public class VenueServiceImpl extends ServiceImpl<VenueMapper, Venue> implements
         // 1. 先从Redis获取
         List<VenueDto> venueDtos = redisComponent.getVenueList();
         if (venueDtos != null && !venueDtos.isEmpty()) {
+            // 为每个场地设置封面图
+            for (VenueDto venueDto : venueDtos) {
+                setCoverImage(venueDto);
+            }
             return venueDtos;
         }
         
@@ -104,15 +108,12 @@ public class VenueServiceImpl extends ServiceImpl<VenueMapper, Venue> implements
         venueDtos = venues.stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
-        
+
+        redisComponent.setVenueList(venueDtos);
         // 4. 为每个场地设置封面图
         for (VenueDto venueDto : venueDtos) {
             setCoverImage(venueDto);
         }
-        
-        // 5. 存入Redis
-        redisComponent.setVenueList(venueDtos);
-        
         return venueDtos;
     }
 

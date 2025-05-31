@@ -3,39 +3,48 @@ const common_vendor = require("./common/vendor.js");
 const _sfc_main = {
   __name: "friend_item",
   props: {
-    userimage: {
-      type: String,
-      default: "https://th.bing.com/th/id/R.5da7e5c735cc95f8f8e3d3bb7e981d7a?rik=koE8E6kqXKbipA&riu=http%3a%2f%2fwww.beihaiting.com%2fuploads%2fallimg%2f150515%2f10723-15051522234J95.jpg&ehk=CTB857uvdo4mBMipOW25WsUo7aaZd7w73ebL%2b7H71jA%3d&risl=&pid=ImgRaw&r=0"
-    },
     username: {
       type: String,
-      default: "育良书记"
+      default: "未知用户"
+    },
+    userimage: {
+      type: String,
+      default: "/static/default-avatar.png"
     },
     message: {
       type: String,
-      default: "你好"
+      default: ""
     },
     date: {
       type: String,
-      default: "8月9日"
+      default: ""
     },
     isNew: {
       type: Boolean,
-      default: true
+      default: false
+    },
+    badgeCount: {
+      type: Number,
+      default: 0
     }
   },
-  emits: ["click"],
-  setup(__props, { emit: __emit }) {
+  setup(__props) {
     return (_ctx, _cache) => {
-      return {
+      return common_vendor.e({
         a: __props.userimage,
-        b: __props.isNew,
-        c: common_vendor.t(__props.username),
-        d: common_vendor.t(__props.message),
-        e: common_vendor.t(__props.date)
-      };
+        b: __props.badgeCount > 0
+      }, __props.badgeCount > 0 ? {
+        c: common_vendor.t(__props.badgeCount > 99 ? "99+" : __props.badgeCount)
+      } : {}, {
+        d: common_vendor.t(__props.username),
+        e: common_vendor.t(__props.message),
+        f: __props.isNew ? 1 : "",
+        g: __props.date
+      }, __props.date ? {
+        h: common_vendor.t(__props.date)
+      } : {});
     };
   }
 };
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-db022675"], ["__file", "C:/Users/86182/Desktop/解压小程序/前端/JieYa/components/friend_item/friend_item.vue"]]);
+const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-db022675"], ["__file", "C:/Users/86182/Desktop/上班/解压小程序/前端/JieYa/components/friend_item/friend_item.vue"]]);
 exports.MiniProgramPage = MiniProgramPage;

@@ -1,5 +1,5 @@
 <template>
-  <div class="article-container">
+  <div class="node-post-container">
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
@@ -11,6 +11,20 @@
               clearable
               @keyup.enter="handleSearch"
             />
+            <el-select
+              v-model="searchForm.categoryId"
+              placeholder="分类"
+              style="width: 120px; margin-left: 10px"
+              clearable
+              @change="handleSearch"
+            >
+              <el-option 
+                v-for="item in categoryOptions" 
+                :key="item.id" 
+                :label="item.name" 
+                :value="item.id" 
+              />
+            </el-select>
             <el-select
               v-model="searchForm.status"
               placeholder="审核状态"
@@ -25,20 +39,34 @@
             <el-button type="primary" @click="handleSearch" style="margin-left: 10px">
               搜索
             </el-button>
+            <el-button @click="resetSearch" style="margin-left: 10px">重置</el-button>
           </div>
-          <el-button type="success" @click="handleAdd">
-            新增稿件
-          </el-button>
         </div>
       </template>
 
-      <!-- 稿件列表 -->
-      <el-table :data="articleList" style="width: 100%" v-loading="loading">
+      <!-- 笔记列表 -->
+      <el-table :data="postList" style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column label="封面" width="120">
+          <template #default="{ row }">
+            <el-image 
+              v-if="row.coverImage" 
+              :src="row.coverImage" 
+              style="width: 80px; height:auto; object-fit: cover;"
+              :preview-src-list="[row.coverImage]"
+              preview-teleported
+            ></el-image>
+            <div v-else class="no-image">无图片</div>
+          </template>
+        </el-table-column>
         <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="author" label="作者" width="120" />
-        <el-table-column prop="categoryName" label="分类" width="120" />
-        <el-table-column prop="createTime" label="提交时间" width="180" />
+        <el-table-column prop="userId" label="作者ID" width="120" />
+        <el-table-column label="分类" width="120">
+          <template #default="{ row }">
+            {{ getCategoryName(row.category) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="postTime" label="提交时间" width="180" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">
@@ -60,12 +88,11 @@
               审核
             </el-button>
             <el-button
-              v-if="row.status !== 0"
               type="warning"
               link
-              @click="handleEdit(row)"
+              @click="handleCategory(row)"
             >
-              编辑
+              修改分类
             </el-button>
             <el-button type="danger" link @click="handleDelete(row)">
               删除
@@ -88,67 +115,59 @@
       </div>
     </el-card>
 
-    <!-- 新增/编辑对话框 -->
+    <!-- 查看笔记对话框 -->
     <el-dialog
-      v-model="dialogVisible"
-      :title="getDialogTitle"
+      v-model="viewDialogVisible"
+      title="笔记详情"
       width="800px"
     >
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="80px"
-      >
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="form.title" placeholder="请输入标题" />
-        </el-form-item>
-        <el-form-item label="分类" prop="categoryId">
-          <el-select v-model="form.categoryId" placeholder="请选择分类">
-            <el-option
-              v-for="item in categoryOptions"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="封面图" prop="coverUrl">
-          <el-upload
-            class="cover-uploader"
-            action="/api/upload"
-            :show-file-list="false"
-            :on-success="handleUploadSuccess"
-            :before-upload="beforeUpload"
-          >
-            <img v-if="form.coverUrl" :src="form.coverUrl" class="cover-image" />
-            <el-icon v-else class="cover-uploader-icon"><Plus /></el-icon>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="内容" prop="content">
-          <!-- 这里可以集成富文本编辑器，如 TinyMCE、Wangeditor 等 -->
-          <el-input
-            v-model="form.content"
-            type="textarea"
-            :rows="10"
-            placeholder="请输入内容"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">
-            确定
-          </el-button>
-        </span>
-      </template>
+      <div class="post-detail">
+        <!-- 顶部轮播图 -->
+        <div class="post-images" v-if="currentPost.images && currentPost.images.length > 0">
+          <el-carousel height="400px" indicator-position="outside" arrow="always">
+            <el-carousel-item v-for="(img, index) in currentPost.images" :key="index">
+              <el-image 
+                :src="img.imagePath" 
+                fit="contain"
+                style="height: 100%; width: 100%"
+                preview-teleported
+              ></el-image>
+            </el-carousel-item>
+          </el-carousel>
+        </div>
+        
+        <!-- 封面图 -->
+        <div class="cover-image" v-else-if="currentPost.coverImage">
+          <el-image 
+            :src="currentPost.coverImage" 
+            fit="contain"
+            style="width: 100%; aspect-ratio: 0.8/1;"
+            preview-teleported
+          ></el-image>
+        </div>
+        
+        <h2>{{ currentPost.title }}</h2>
+        <div class="post-meta">
+          <span>作者ID: {{ currentPost.userId }}</span>
+          <span>分类: {{ getCategoryName(currentPost.category) }}</span>
+          <span>状态: {{ getStatusText(currentPost.status) }}</span>
+        </div>
+        
+        <div class="post-content" v-html="currentPost.content"></div>
+        
+        <!-- 标签展示 -->
+        <div v-if="currentPost.tags && currentPost.tags.length > 0" class="post-tags">
+          <el-tag v-for="(tag, index) in parsedTags" :key="index" size="small" class="tag-item">
+            {{ tag }}
+          </el-tag>
+        </div>
+      </div>
     </el-dialog>
 
     <!-- 审核对话框 -->
     <el-dialog
       v-model="auditDialogVisible"
-      title="稿件审核"
+      title="笔记审核"
       width="500px"
     >
       <el-form
@@ -164,12 +183,12 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item
-          label="审核意见"
-          prop="remark"
+          label="拒绝原因"
+          prop="reason"
           v-if="auditForm.status === 2"
         >
           <el-input
-            v-model="auditForm.remark"
+            v-model="auditForm.reason"
             type="textarea"
             :rows="3"
             placeholder="请输入拒绝原因"
@@ -185,86 +204,109 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- 修改分类对话框 -->
+    <el-dialog
+      v-model="categoryDialogVisible"
+      title="修改分类"
+      width="400px"
+    >
+      <el-form
+        ref="categoryFormRef"
+        :model="categoryForm"
+        :rules="categoryRules"
+        label-width="80px"
+      >
+        <el-form-item label="分类" prop="categoryId">
+          <el-select v-model="categoryForm.categoryId" placeholder="请选择分类">
+            <el-option
+              v-for="item in categoryOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="categoryDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleCategorySubmit">
+            确定
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { 
+  getPostList, 
+  getPendingList, 
+  getPostDetail, 
+  approvePost, 
+  rejectPost, 
+  deletePost, 
+  updateCategory 
+} from '@/api/nodePost'
+import { getCategoryList } from '@/api/category'
 
 // 搜索表单
 const searchForm = ref({
   keyword: '',
+  categoryId: '',
   status: ''
 })
 
 // 表格数据
 const loading = ref(false)
-const articleList = ref([])
+const postList = ref([])
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 
 // 分类选项
-const categoryOptions = ref([
-  { id: 1, name: '新闻资讯' },
-  { id: 2, name: '活动公告' }
-])
+const categoryOptions = ref([])
 
-// 对话框数据
-const dialogVisible = ref(false)
-const dialogType = ref('add')
-const formRef = ref(null)
-const form = ref({
-  title: '',
-  categoryId: '',
-  coverUrl: '',
-  content: ''
-})
+// 查看笔记对话框
+const viewDialogVisible = ref(false)
+const currentPost = ref({})
 
 // 审核对话框数据
 const auditDialogVisible = ref(false)
 const auditFormRef = ref(null)
 const auditForm = ref({
-  id: null,
+  postId: '',
   status: 1,
-  remark: ''
+  reason: ''
+})
+
+// 分类对话框数据
+const categoryDialogVisible = ref(false)
+const categoryFormRef = ref(null)
+const categoryForm = ref({
+  postId: '',
+  categoryId: ''
 })
 
 // 表单验证规则
-const rules = {
-  title: [
-    { required: true, message: '请输入标题', trigger: 'blur' },
-    { min: 2, max: 100, message: '长度在 2 到 100 个字符', trigger: 'blur' }
-  ],
-  categoryId: [
-    { required: true, message: '请选择分类', trigger: 'change' }
-  ],
-  content: [
-    { required: true, message: '请输入内容', trigger: 'blur' }
-  ]
-}
-
-// 审核表单验证规则
 const auditRules = {
   status: [
     { required: true, message: '请选择审核结果', trigger: 'change' }
   ],
-  remark: [
+  reason: [
     { required: true, message: '请输入拒绝原因', trigger: 'blur' }
   ]
 }
 
-// 计算属性
-const getDialogTitle = computed(() => {
-  const titles = {
-    add: '新增稿件',
-    edit: '编辑稿件',
-    view: '查看稿件'
-  }
-  return titles[dialogType.value]
-})
+const categoryRules = {
+  categoryId: [
+    { required: true, message: '请选择分类', trigger: 'change' }
+  ]
+}
 
 // 获取状态类型
 const getStatusType = (status) => {
@@ -286,35 +328,63 @@ const getStatusText = (status) => {
   return texts[status]
 }
 
-// 获取稿件列表
-const getList = async () => {
+// 获取分类名称
+const getCategoryName = (categoryId) => {
+  if (!categoryId) return '未分类'
+  const category = categoryOptions.value.find(item => item.id === categoryId)
+  return category ? category.name : `分类(${categoryId})`
+}
+
+// 解析标签
+const parsedTags = computed(() => {
+  if (!currentPost.value.tags) return [];
+  
+  try {
+    if (typeof currentPost.value.tags === 'string') {
+      // 尝试多层解析，处理嵌套JSON字符串情况
+      let parsedData = JSON.parse(currentPost.value.tags);
+      
+      // 如果解析出来的还是字符串，继续解析
+      if (typeof parsedData === 'string') {
+        parsedData = JSON.parse(parsedData);
+      }
+      
+      // 扁平化处理，确保返回字符串数组
+      if (Array.isArray(parsedData)) {
+        return parsedData.flat().filter(tag => typeof tag === 'string');
+      }
+      return [];
+    } else if (Array.isArray(currentPost.value.tags)) {
+      return currentPost.value.tags.flat().filter(tag => typeof tag === 'string');
+    }
+    return [];
+  } catch (e) {
+    console.error('解析标签失败:', e);
+    return [];
+  }
+});
+
+// 初始化加载数据
+onMounted(() => {
+  fetchCategories()
+  fetchPostList()
+})
+
+// 获取笔记列表
+const fetchPostList = async () => {
   loading.value = true
   try {
-    // TODO: 调用接口获取数据
-    // 模拟数据
-    articleList.value = [
-      {
-        id: 1,
-        title: '示例稿件1',
-        author: '张三',
-        categoryId: 1,
-        categoryName: '新闻资讯',
-        createTime: '2024-03-16 12:00:00',
-        status: 0
-      },
-      {
-        id: 2,
-        title: '示例稿件2',
-        author: '李四',
-        categoryId: 2,
-        categoryName: '活动公告',
-        createTime: '2024-03-16 13:00:00',
-        status: 1
-      }
-    ]
-    total.value = 2
+    const { keyword, categoryId, status } = searchForm.value
+    const res = await getPostList(currentPage.value, pageSize.value, categoryId, keyword, status)
+    if (res.code === 1) {
+      postList.value = res.data.records || []
+      total.value = res.data.total || 0
+    } else {
+      ElMessage.error(res.message || '获取笔记列表失败')
+    }
   } catch (error) {
-    ElMessage.error('获取稿件列表失败')
+    console.error('获取笔记列表失败:', error)
+    ElMessage.error('获取笔记列表失败')
   } finally {
     loading.value = false
   }
@@ -323,139 +393,198 @@ const getList = async () => {
 // 搜索
 const handleSearch = () => {
   currentPage.value = 1
-  getList()
+  fetchPostList()
 }
 
-// 新增稿件
-const handleAdd = () => {
-  dialogType.value = 'add'
-  form.value = {
-    title: '',
-    categoryId: '',
-    coverUrl: '',
-    content: ''
+// 分页大小变化
+const handleSizeChange = (val) => {
+  pageSize.value = val
+  fetchPostList()
+}
+
+// 当前页变化
+const handleCurrentChange = (val) => {
+  currentPage.value = val
+  fetchPostList()
+}
+
+// 查看笔记
+const handleView = async (row) => {
+  try {
+    const res = await getPostDetail(row.id)
+    if (res.code === 1) {
+      currentPost.value = res.data
+      
+      // 确保images是数组
+      if (!Array.isArray(currentPost.value.images)) {
+        if (typeof currentPost.value.images === 'string') {
+          try {
+            currentPost.value.images = JSON.parse(currentPost.value.images)
+          } catch (e) {
+            currentPost.value.images = []
+          }
+        } else {
+          currentPost.value.images = []
+        }
+      }
+      
+      // 确保tags正确处理
+      if (typeof currentPost.value.tags === 'string') {
+        try {
+          currentPost.value.tags = JSON.parse(currentPost.value.tags)
+        } catch (e) {
+          currentPost.value.tags = []
+        }
+      }
+      
+      viewDialogVisible.value = true
+    } else {
+      ElMessage.error(res.message || '获取笔记详情失败')
+    }
+  } catch (error) {
+    console.error('获取笔记详情失败:', error)
+    ElMessage.error('获取笔记详情失败')
   }
-  dialogVisible.value = true
 }
 
-// 查看稿件
-const handleView = (row) => {
-  dialogType.value = 'view'
-  form.value = { ...row }
-  dialogVisible.value = true
-}
-
-// 编辑稿件
-const handleEdit = (row) => {
-  dialogType.value = 'edit'
-  form.value = { ...row }
-  dialogVisible.value = true
-}
-
-// 审核稿件
+// 审核笔记
 const handleAudit = (row) => {
   auditForm.value = {
-    id: row.id,
+    postId: row.id,
     status: 1,
-    remark: ''
+    reason: ''
   }
   auditDialogVisible.value = true
 }
 
-// 删除稿件
+// 提交审核
+const handleAuditSubmit = async () => {
+  if (!auditForm.value.postId) {
+    ElMessage.error('笔记ID不能为空')
+    return
+  }
+  
+  try {
+    await auditFormRef.value.validate()
+    
+    let res
+    if (auditForm.value.status === 1) {
+      // 通过
+      res = await approvePost(auditForm.value.postId)
+    } else {
+      // 拒绝
+      res = await rejectPost(auditForm.value.postId, auditForm.value.reason)
+    }
+    
+    if (res.code === 1) {
+      ElMessage.success(res.message || '审核成功')
+      auditDialogVisible.value = false
+      fetchPostList()
+    } else {
+      ElMessage.error(res.message || '审核失败')
+    }
+  } catch (error) {
+    console.error('审核失败:', error)
+    ElMessage.error('审核失败')
+  }
+}
+
+// 修改分类
+const handleCategory = (row) => {
+  categoryForm.value = {
+    postId: row.id,
+    categoryId: row.categoryId
+  }
+  categoryDialogVisible.value = true
+}
+
+// 提交分类修改
+const handleCategorySubmit = async () => {
+  if (!categoryForm.value.postId) {
+    ElMessage.error('笔记ID不能为空')
+    return
+  }
+  
+  try {
+    await categoryFormRef.value.validate()
+    
+    const res = await updateCategory(
+      categoryForm.value.postId, 
+      categoryForm.value.categoryId
+    )
+    
+    if (res.code === 1) {
+      ElMessage.success(res.message || '修改分类成功')
+      categoryDialogVisible.value = false
+      fetchPostList()
+    } else {
+      ElMessage.error(res.message || '修改分类失败')
+    }
+  } catch (error) {
+    console.error('修改分类失败:', error)
+    ElMessage.error('修改分类失败')
+  }
+}
+
+// 删除笔记
 const handleDelete = (row) => {
   ElMessageBox.confirm(
-    '确认删除该稿件吗？',
+    '确认删除该笔记吗？此操作不可恢复',
     '警告',
     {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'warning',
     }
   ).then(async () => {
     try {
-      // TODO: 调用删除接口
-      ElMessage.success('删除成功')
-      getList()
+      const res = await deletePost(row.id)
+      if (res.code === 1) {
+        ElMessage.success(res.message || '删除成功')
+        fetchPostList()
+      } else {
+        ElMessage.error(res.message || '删除失败')
+      }
     } catch (error) {
+      console.error('删除失败:', error)
       ElMessage.error('删除失败')
     }
+  }).catch(() => {
+    // 取消删除
   })
 }
 
-// 上传相关
-const beforeUpload = (file) => {
-  const isImage = file.type.startsWith('image/')
-  const isLt2M = file.size / 1024 / 1024 < 2
-
-  if (!isImage) {
-    ElMessage.error('上传文件只能是图片格式!')
-    return false
-  }
-  if (!isLt2M) {
-    ElMessage.error('上传图片大小不能超过 2MB!')
-    return false
-  }
-  return true
-}
-
-const handleUploadSuccess = (response) => {
-  // TODO: 处理上传成功后的响应
-  form.value.coverUrl = response.url
-}
-
-// 提交表单
-const handleSubmit = async () => {
-  if (!formRef.value) return
-  await formRef.value.validate(async (valid) => {
-    if (valid) {
-      try {
-        // TODO: 调用新增/编辑接口
-        ElMessage.success(dialogType.value === 'add' ? '新增成功' : '编辑成功')
-        dialogVisible.value = false
-        getList()
-      } catch (error) {
-        ElMessage.error(dialogType.value === 'add' ? '新增失败' : '编辑失败')
-      }
+// 获取分类列表
+const fetchCategories = async () => {
+  try {
+    const res = await getCategoryList()
+    if (res.code === 1) {
+      categoryOptions.value = res.data.map(item => ({
+        id: item.categoryId,
+        code: item.categoryCode,
+        name: item.categoryName,
+        sort: item.sort
+      }))
     }
-  })
+  } catch (error) {
+    console.error('获取分类列表失败:', error)
+  }
 }
 
-// 提交审核
-const handleAuditSubmit = async () => {
-  if (!auditFormRef.value) return
-  await auditFormRef.value.validate(async (valid) => {
-    if (valid) {
-      try {
-        // TODO: 调用审核接口
-        ElMessage.success('审核提交成功')
-        auditDialogVisible.value = false
-        getList()
-      } catch (error) {
-        ElMessage.error('审核提交失败')
-      }
-    }
-  })
+// 重置搜索
+const resetSearch = () => {
+  searchForm.value = {
+    keyword: '',
+    categoryId: '',
+    status: ''
+  }
+  currentPage.value = 1
+  fetchPostList()
 }
-
-// 分页相关
-const handleSizeChange = (val) => {
-  pageSize.value = val
-  getList()
-}
-
-const handleCurrentChange = (val) => {
-  currentPage.value = val
-  getList()
-}
-
-onMounted(() => {
-  getList()
-})
 </script>
 
 <style lang="scss" scoped>
-.article-container {
+.node-post-container {
   padding: 20px;
 
   .card-header {
@@ -474,34 +603,112 @@ onMounted(() => {
     display: flex;
     justify-content: flex-end;
   }
-
-  .cover-uploader {
-    border: 1px dashed var(--el-border-color);
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: var(--el-transition-duration-fast);
-
-    &:hover {
-      border-color: var(--el-color-primary);
+  
+  .post-detail {
+    padding: 15px;
+    
+    h2 {
+      margin-top: 15px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      font-size: 18px;
     }
-
-    .cover-uploader-icon {
-      font-size: 28px;
-      color: #8c939d;
-      width: 200px;
-      height: 120px;
-      text-align: center;
-      line-height: 120px;
+    
+    .post-meta {
+      margin-bottom: 15px;
+      color: #666;
+      font-size: 14px;
+      
+      span {
+        margin-right: 15px;
+      }
     }
-
+    
     .cover-image {
-      width: 200px;
-      height: 120px;
-      display: block;
-      object-fit: cover;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      overflow: hidden;
+      text-align: center;
+      background-color: #f5f7fa;
+    }
+    
+    .post-content {
+      line-height: 1.6;
+      margin-bottom: 15px;
+      font-size: 15px;
+      color: #333;
+    }
+    
+    .post-images {
+      margin-bottom: 15px;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #f5f7fa;
+      
+      .el-carousel {
+        border-radius: 8px;
+      }
+    }
+    
+    .post-tags {
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      
+      .tag-item {
+        border-radius: 15px;
+        padding: 0 10px;
+      }
+    }
+  }
+
+  :deep(.el-image-viewer__wrapper) {
+    z-index: 3000 !important;
+  }
+
+  :deep(.el-table .el-table__fixed-right) {
+    z-index: 1;
+  }
+
+  .el-table-column[label="封面"] .el-image {
+    width: 80px;
+    aspect-ratio: 0.8/1;
+    object-fit: cover;
+  }
+
+  .no-image {
+    width: 80px;
+    height: 100px; /* 保持0.8:1的比例 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f7fa;
+    color: #909399;
+    font-size: 12px;
+    border-radius: 4px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .card-header .left {
+    flex-direction: column;
+    align-items: stretch;
+    
+    .el-input, .el-select {
+      margin: 5px 0;
+      width: 100% !important;
+    }
+  }
+
+  .post-detail {
+    padding: 10px;
+    
+    .post-images {
+      .el-carousel {
+        height: 300px !important;
+      }
     }
   }
 }
-</style> 
+</style>

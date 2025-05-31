@@ -50,4 +50,5 @@ public interface BannerMapper extends BaseMapper<Banner> {
      */
     @Select("SELECT banner_id, image, type, `on`, text, content_id, sort FROM banner ORDER BY sort ASC")
     List<Banner> selectList();
+
 }

@@ -23,6 +23,9 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
     
     @Autowired
     private WebSocketService webSocketService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
     
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -30,16 +33,15 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
         
         // 从URL参数提取token
         String token = extractTokenFromSession(session);
-        if (token != null && JwtUtil.validateToken(token)) {
+
+        if (token != null && jwtUtil.validateToken(token)) {
             // 获取用户ID
-            String userId = JwtUtil.getUsernameFromToken(token);
-            
+            String userId = jwtUtil.getUserId(token);
             // 将用户ID和会话关联
             sessionUserMap.put(session, userId);
-            
             // 注册到WebSocketService
             webSocketService.registerUserSession(userId, session);
-            
+
             // 发送连接成功消息
             Message connectMessage = new Message();
             connectMessage.setType("CONNECT");

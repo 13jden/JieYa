@@ -21,7 +21,14 @@ export default function request(options) {
   return new Promise((resolve, reject) => {
     // 获取token
     const token = uni.getStorageSync('token');
-    
+    if(token==null){
+		setTimeout(() => {
+		  uni.reLaunch({
+		    url: '/pages/login/login'
+		  });
+		}, 1000);
+		return reject({ code: 401, message: '未登录，请先登录' });
+	}
     // 设置请求头
     const header = {
       ...options.header,
@@ -40,7 +47,7 @@ export default function request(options) {
         formData: options.formData || {},
         header: header,
         success: (res) => {
-          if (res.statusCode === 500) {
+          if (res.statusCode === 50) {
             handleUnauthorized();
             reject({ code: 500, message: '登录已过期，请重新登录' });
             return;
@@ -78,26 +85,52 @@ export default function request(options) {
     } 
     // 普通请求
     else {
-      // 如果没有指定content-type，设置默认值
-      if (!header['content-type']) {
-        header['content-type'] = options.method === 'GET' 
-          ? 'application/x-www-form-urlencoded' 
-          : 'application/json';
+      // 修改这里：检查是否已设置content-type，如果未设置，则使用默认值
+      if (!header['content-type'] && !header['Content-Type']) {
+        // 默认值：GET请求使用表单格式，POST请求也默认使用表单格式
+        header['content-type'] = 'application/x-www-form-urlencoded';
       }
       
       // 处理数据
       let data = options.data;
-      if (header['content-type'] === 'application/x-www-form-urlencoded' && typeof data === 'object') {
-        let formData = '';
-        for (let key in data) {
+      
+      // 增强表单数据处理，支持数组
+      let contentType = header['content-type'] || header['Content-Type'] || '';
+      contentType = contentType.toLowerCase(); // 转小写以便比较
+      
+      // 如果是表单格式且data是对象，转换为表单字符串
+      if ((contentType.includes('application/x-www-form-urlencoded')) && typeof data === 'object' && data !== null) {
+        // 预处理数组参数
+        const processedData = {};
+        
+        for (const key in data) {
           if (data.hasOwnProperty(key)) {
+            if (Array.isArray(data[key])) {
+              // 将数组参数转为JSON字符串
+              processedData[key] = JSON.stringify(data[key]);
+            } else if (data[key] !== null && data[key] !== undefined) {
+              processedData[key] = data[key];
+            }
+          }
+        }
+        
+        // 转换为URL编码的表单字符串
+        let formData = '';
+        for (let key in processedData) {
+          if (processedData.hasOwnProperty(key)) {
             if (formData !== '') {
               formData += '&';
             }
-            formData += encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
+            formData += encodeURIComponent(key) + '=' + encodeURIComponent(processedData[key] === null ? '' : processedData[key]);
           }
         }
         data = formData;
+        
+        // 调试信息
+        console.log('表单数据:', data);
+      } else if (contentType.includes('application/json') && typeof data === 'object') {
+        // JSON格式，无需特殊处理
+        console.log('JSON数据:', data);
       }
       
       uni.request({

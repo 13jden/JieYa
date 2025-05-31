@@ -6,6 +6,7 @@ import com.example.common.pojo.Message;
 import com.example.common.adminDto.AdminMessageDto;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -42,4 +43,10 @@ public interface MessageService extends IService<Message> {
     int markSystemMessagesAsRead();
     int markUserMessagesAsRead(String userId);
     int markAllMessagesAsRead();
+
+    /**
+     * 获取用户消息类型列表
+     * @return 系统消息类型列表
+     */
+    List<Map<String, String>> getMessage2UserType();
 }

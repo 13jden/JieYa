@@ -1,6 +1,7 @@
 package com.example.admin.websocket;
 
 import com.example.common.utils.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -15,6 +16,9 @@ import java.util.List;
 @Component
 public class UserChannelInterceptor implements ChannelInterceptor {
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
@@ -25,7 +29,7 @@ public class UserChannelInterceptor implements ChannelInterceptor {
             if (authorization != null && !authorization.isEmpty()) {
                 String token = authorization.get(0);
                 // 使用JWT工具类验证token
-                if (JwtUtil.validateToken(token)) {
+                if (jwtUtil.validateToken(token)) {
                     // 从token中获取用户ID
                     String userId = JwtUtil.getUsernameFromToken(token);
                     

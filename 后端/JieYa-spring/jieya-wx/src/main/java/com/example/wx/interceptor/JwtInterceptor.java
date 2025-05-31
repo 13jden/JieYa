@@ -17,6 +17,9 @@ public class JwtInterceptor implements HandlerInterceptor {
     @Autowired
     private RedisComponent redisComponent;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 放行登录、注册、验证码等接口
@@ -30,7 +33,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 
         // 从请求头获取token
         String token = request.getHeader("Authorization");
-
+        System.out.println(token+"1111");
         // 如果请求头中没有，尝试从请求参数获取
         if (StringUtils.isEmpty(token)) {
             token = request.getParameter("token");
@@ -41,7 +44,7 @@ public class JwtInterceptor implements HandlerInterceptor {
         }
         System.out.println(token);
         // 验证JWT token是否有效
-        if (!JwtUtil.validateToken(token)) {
+        if (!jwtUtil.validateToken(token)) {
             throw new RuntimeException("token无效");
         }
 

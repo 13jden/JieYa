@@ -48,7 +48,7 @@ public interface MessageMapper extends BaseMapper<Message> {
     // 系统消息
     @Select("SELECT m.* " +
             "FROM message m " +
-            "WHERE m.type = 'SYSTEM' " +
+            "WHERE m.type = 'SYSTEM-ADMIN' " +
             "ORDER BY m.time DESC")
     Page<AdminMessageDto> selectSystemMessage(Page<AdminMessageDto> page);
 
@@ -60,23 +60,23 @@ public interface MessageMapper extends BaseMapper<Message> {
     Page<AdminMessageDto> selectOrderMessage(Page<AdminMessageDto> page);
 
     @Select("SELECT COUNT(*) FROM message " +
-            "WHERE type NOT LIKE 'ORDER%' AND type NOT LIKE 'SYSTEM%' AND status = 0")
+            "WHERE type LIKE 'ADMIN-USER' AND status = 0")
     Integer selectUserMessageCount();
     
-    @Select("SELECT COUNT(*) FROM message WHERE type LIKE 'ORDER%' AND status = 0")
+    @Select("SELECT COUNT(*) FROM message WHERE type LIKE 'ORDER-ADMIN' AND status = 0")
     Integer selectOrderMessageCount();
     
-    @Select("SELECT COUNT(*) FROM message WHERE type LIKE 'SYSTEM%' AND status = 0")
+    @Select("SELECT COUNT(*) FROM message WHERE type LIKE 'SYSTEM-ADMIN' AND status = 0")
     Integer selectSystemMessageCount();
     
     @Delete("DELETE FROM message WHERE to_user = #{toUser} OR user = #{toUser}")
     int deleteUserMessage(@Param("toUser") String toUser);
     
     // 修正已读操作接口，使用status字段
-    @Update("UPDATE message SET status = 1 WHERE type LIKE 'ORDER%'")
+    @Update("UPDATE message SET status = 1 WHERE type LIKE 'ORDER-ADMIN'")
     int markOrderMessagesAsRead();
     
-    @Update("UPDATE message SET status = 1 WHERE type LIKE 'SYSTEM%'")
+    @Update("UPDATE message SET status = 1 WHERE type LIKE 'SYSTEM-ADMIN'")
     int markSystemMessagesAsRead();
     
     @Update("UPDATE message SET status = 1 WHERE to_user = #{toUser} OR user = #{toUser}")

@@ -58,7 +58,7 @@ public class ImageController {
             file.transferTo(destFile);
 
             // 返回相对路径，可以通过API访问
-            String filePath =  hostUrl + "/message/" + today + "/" + fileName;
+            String filePath = hostUrl + "/files/message/" + today + "/" + fileName;
             return Result.success(filePath);
 
         } catch (IOException e) {

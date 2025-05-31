@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { getVerificationCode, login as userLogin } from '../../api/user';
 import webSocketService from '../../utils/websocket';
 
@@ -152,6 +152,11 @@ const goRegister = () => {
 // 组件挂载时获取验证码
 onMounted(() => {
   getCode();
+});
+
+// 组件卸载前关闭WebSocket连接
+onBeforeUnmount(() => {
+  webSocketService.close();
 });
 </script>
 <style lang="scss" scoped>

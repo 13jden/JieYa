@@ -91,10 +91,10 @@ import { CountTo } from 'vue3-count-to'
 
 // 统计数据
 const statistics = ref([
-  { title: '今日用户数', value: 2341, trend: 5.2 },
-  { title: '活跃用户', value: 1280, trend: -2.3 },
-  { title: '订单总数', value: 3752, trend: 8.4 },
-  { title: '总收入', value: 25680, trend: 12.5 }
+  { title: '今日用户数', value: 4, trend: 5.2 },
+  { title: '活跃用户', value: 2, trend: -2.3 },
+  { title: '订单总数', value: 3, trend: 8.4 },
+  { title: '总收入', value: 10, trend: 12.5 }
 ])
 
 // 时间范围选择
@@ -102,10 +102,9 @@ const timeRange = ref('week')
 
 // 最近活动
 const recentActivities = ref([
-  { content: '张三发布了新的场地信息', time: '2024-03-16 10:30:00', type: 'primary' },
-  { content: '系统更新完成', time: '2024-03-16 09:15:00', type: 'success' },
-  { content: '李四提交了新的稿件', time: '2024-03-16 08:45:00', type: 'info' },
-  { content: '新用户注册通知', time: '2024-03-16 08:00:00', type: 'warning' }
+  { content: '您发布了新的场地信息', time: '2024-03-16 10:30:00', type: 'primary' },
+  { content: '登登提交了新的稿件', time: '2024-03-16 08:45:00', type: 'warning' },
+  { content: '新用户注册', time: '2024-03-16 08:00:00', type: 'info' }
 ])
 
 // 图表实例
@@ -173,11 +172,9 @@ const initUserChart = () => {
         type: 'pie',
         radius: '50%',
         data: [
-          { value: 1048, name: '北京' },
-          { value: 735, name: '上海' },
-          { value: 580, name: '广州' },
-          { value: 484, name: '深圳' },
-          { value: 300, name: '其他' }
+          { value: 10, name: '杭州' },
+          { value: 6, name: '上海' },
+          { value: 3, name: '其他' }
         ],
         emphasis: {
           itemStyle: {

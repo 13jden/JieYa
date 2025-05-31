@@ -31,6 +31,7 @@
               :src="row.coverImage"
               :preview-src-list="row.imageList?.map(img => img.imageUrl) || []"
               fit="cover"
+              preview-teleported
             />
           </template>
         </el-table-column>
@@ -1156,5 +1157,13 @@ onMounted(() => {
 
 .sortable-drag {
   opacity: 0.8;
+}
+
+:deep(.el-image-viewer__wrapper) {
+  z-index: 3000 !important;
+}
+
+:deep(.el-table .el-table__fixed-right) {
+  z-index: 1;
 }
 </style> 

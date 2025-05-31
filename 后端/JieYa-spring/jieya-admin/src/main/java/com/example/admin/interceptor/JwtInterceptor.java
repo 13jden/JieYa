@@ -17,6 +17,9 @@ public class JwtInterceptor implements HandlerInterceptor {
     @Autowired
     private RedisComponent redisComponent;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
@@ -45,7 +48,7 @@ public class JwtInterceptor implements HandlerInterceptor {
         }
 
         // 验证token是否有效
-        if (!JwtUtil.validateToken(token)) {
+        if (!jwtUtil.validateToken(token)) {
             throw new RuntimeException("token无效");
         }
 

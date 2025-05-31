@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.wx.mapper.CommentMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.common.pojo.Comment">
+        <id column="id" property="id" />
+        <result column="content" property="content" />
+        <result column="parent_id" property="parentId" />
+        <result column="file_url" property="fileUrl" />
+        <result column="user_id" property="userId" />
+        <result column="comment_count" property="commentCount" />
+        <result column="like_count" property="likeCount" />
+        <result column="no_like_count" property="noLikeCount" />
+        <result column="time" property="time" />
+        <result column="to_user_id" property="toUserId" />
+        <result column="is_top" property="isTop" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, content, parent_id, file_url, user_id, comment_count, like_count, no_like_count, time, to_user_id, is_top
+    </sql>
+
+</mapper>

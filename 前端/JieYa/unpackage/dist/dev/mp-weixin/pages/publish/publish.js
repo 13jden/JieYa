@@ -1,5 +1,6 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const api_note = require("../../api/note.js");
 const _sfc_main = {
   __name: "publish",
   setup(__props) {
@@ -16,12 +17,55 @@ const _sfc_main = {
     const isDragging = common_vendor.ref(false);
     const dragElement = common_vendor.ref(null);
     const visibility = common_vendor.ref("public");
+    const isEdit = common_vendor.ref(false);
+    const postId = common_vendor.ref("");
+    const originalImageList = common_vendor.ref([]);
     common_vendor.onMounted(() => {
-      checkDraft();
+      var _a;
+      const pages = getCurrentPages();
+      const currentPage = pages[pages.length - 1];
+      const options = (_a = currentPage.$page) == null ? void 0 : _a.options;
+      if (options && options.postId) {
+        postId.value = options.postId;
+        isEdit.value = true;
+        loadNoteDetail();
+      } else {
+        checkDraft();
+      }
     });
+    async function loadNoteDetail() {
+      try {
+        common_vendor.index.showLoading({
+          title: "加载中..."
+        });
+        const result = await api_note.getNoteDetail(postId.value);
+        if (result.code === 200) {
+          const noteData = result.data;
+          title.value = noteData.title;
+          content.value = noteData.content;
+          selectedTags.value = noteData.tags || [];
+          filelist.value = noteData.imageUrls || [];
+          originalImageList.value = noteData.images || [];
+          visibility.value = noteData.visibility || "public";
+        } else {
+          common_vendor.index.showToast({
+            title: "获取笔记失败",
+            icon: "none"
+          });
+        }
+      } catch (error) {
+        console.error("获取笔记详情失败:", error);
+        common_vendor.index.showToast({
+          title: "获取笔记失败",
+          icon: "none"
+        });
+      } finally {
+        common_vendor.index.hideLoading();
+      }
+    }
     function checkDraft() {
       try {
-        const draftData = common_vendor.wx$1.getStorageSync("noteDraft");
+        const draftData = common_vendor.index.getStorageSync("noteDraft");
         if (draftData) {
           common_vendor.index.showModal({
             title: "发现草稿",
@@ -37,7 +81,7 @@ const _sfc_main = {
                   duration: 2e3
                 });
               } else {
-                common_vendor.wx$1.removeStorageSync("noteDraft");
+                common_vendor.index.removeStorageSync("noteDraft");
                 resetForm();
                 common_vendor.index.showToast({
                   title: "已创建新笔记",
@@ -62,7 +106,7 @@ const _sfc_main = {
     }
     function loadDraft() {
       try {
-        const draftData = common_vendor.wx$1.getStorageSync("noteDraft");
+        const draftData = common_vendor.index.getStorageSync("noteDraft");
         if (draftData) {
           title.value = draftData.title || "";
           content.value = draftData.content || "";
@@ -84,7 +128,7 @@ const _sfc_main = {
           visibility: visibility.value,
           timestamp: Date.now()
         };
-        common_vendor.wx$1.setStorageSync("noteDraft", draftData);
+        common_vendor.index.setStorageSync("noteDraft", draftData);
         common_vendor.index.showToast({
           title: "草稿保存成功",
           icon: "success",
@@ -110,7 +154,7 @@ const _sfc_main = {
           isPreview: true
           // 标记为预览模式
         };
-        common_vendor.wx$1.setStorageSync("notePreview", previewData);
+        common_vendor.index.setStorageSync("notePreview", previewData);
         common_vendor.index.navigateTo({
           url: "/pages/note/note"
         });
@@ -125,7 +169,7 @@ const _sfc_main = {
     }
     function chooseFile() {
       common_vendor.index.chooseImage({
-        count: 9,
+        count: 9 - filelist.value.length,
         success: (res) => {
           res.tempFilePaths.forEach((filePath) => {
             filelist.value.push(filePath);
@@ -138,12 +182,14 @@ const _sfc_main = {
     }
     function removeImage(index) {
       filelist.value.splice(index, 1);
-      imagelist.value.splice(index, 1);
+      if (imagelist.value.length > index) {
+        imagelist.value.splice(index, 1);
+      }
     }
     function addTag() {
       if (newTag.value) {
         if (!selectedTags.value.includes(newTag.value)) {
-          selectedTags.value.push(`${newTag.value}`);
+          selectedTags.value.push(newTag.value);
           newTag.value = "";
         } else {
           common_vendor.index.showToast({
@@ -200,6 +246,70 @@ const _sfc_main = {
     function setVisibility(type) {
       visibility.value = type;
     }
+    async function finish() {
+      if (!title.value) {
+        common_vendor.index.showToast({
+          title: "请输入标题",
+          icon: "none"
+        });
+        return;
+      }
+      if (!content.value) {
+        common_vendor.index.showToast({
+          title: "请输入内容",
+          icon: "none"
+        });
+        return;
+      }
+      if (filelist.value.length === 0) {
+        common_vendor.index.showToast({
+          title: "请至少添加一张图片",
+          icon: "none"
+        });
+        return;
+      }
+      common_vendor.index.showLoading({
+        title: isEdit.value ? "更新中..." : "发布中..."
+      });
+      try {
+        const noteData = {
+          title: title.value,
+          content: content.value,
+          tags: selectedTags.value,
+          visibility: visibility.value
+        };
+        let result;
+        if (isEdit.value) {
+          const newLocalImages = filelist.value.filter((item) => item.startsWith("file://") || item.startsWith("/"));
+          result = await api_note.updateNote(postId.value, noteData, newLocalImages, originalImageList.value);
+        } else {
+          result = await api_note.addNote(noteData, filelist.value);
+        }
+        common_vendor.index.hideLoading();
+        if (result.code === 200) {
+          common_vendor.index.showToast({
+            title: isEdit.value ? "更新成功" : "发布成功",
+            icon: "success"
+          });
+          common_vendor.index.removeStorageSync("noteDraft");
+          setTimeout(() => {
+            common_vendor.index.navigateBack();
+          }, 1500);
+        } else {
+          common_vendor.index.showToast({
+            title: result.msg || "操作失败",
+            icon: "none"
+          });
+        }
+      } catch (error) {
+        common_vendor.index.hideLoading();
+        common_vendor.index.showToast({
+          title: "操作失败: " + error.message,
+          icon: "none"
+        });
+        console.error(isEdit.value ? "更新笔记失败:" : "发布笔记失败:", error);
+      }
+    }
     return (_ctx, _cache) => {
       return common_vendor.e({
         a: common_vendor.f(filelist.value, (item, index, i0) => {
@@ -208,7 +318,7 @@ const _sfc_main = {
             b: common_vendor.o(($event) => removeImage(index), index),
             c: index,
             d: index,
-            e: isDragging.value && dragIndex.value.value === index ? 1 : "",
+            e: isDragging.value && dragIndex.value === index ? 1 : "",
             f: common_vendor.s(getItemStyle(index)),
             g: common_vendor.o(dragStart, index),
             h: common_vendor.o(dragMove, index),
@@ -244,11 +354,11 @@ const _sfc_main = {
         t: common_vendor.o(($event) => setVisibility("private")),
         v: common_vendor.o(saveDraft),
         w: common_vendor.o(previewNote),
-        x: common_vendor.o((...args) => _ctx.finish && _ctx.finish(...args)),
+        x: common_vendor.o(finish),
         y: !filelist.value.length
       });
     };
   }
 };
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-bfce3555"], ["__file", "C:/Users/86182/Desktop/解压小程序/前端/JieYa/pages/publish/publish.vue"]]);
+const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-bfce3555"], ["__file", "C:/Users/86182/Desktop/上班/解压小程序/前端/JieYa/pages/publish/publish.vue"]]);
 wx.createPage(MiniProgramPage);

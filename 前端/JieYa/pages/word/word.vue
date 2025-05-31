@@ -10,15 +10,15 @@
 		</view>
 		<view class="userbox">
 			<view class="myfans">
-			  <text class="number">88</text>
+			  <text class="number">2</text>
 			  <text class="label">粉丝</text>
 			</view>
 			<view class="mygood">
-			  <text class="number">88</text>
+			  <text class="number">8</text>
 			  <text class="label">点赞</text>
 			</view>
 			<view class="myfocus">
-			  <text class="number">88</text>
+			  <text class="number">1</text>
 			  <text class="label">关注</text>
 			</view>
 			<uni-icons type="settings" size="50rpx" @click="goToUpdateMe"></uni-icons>

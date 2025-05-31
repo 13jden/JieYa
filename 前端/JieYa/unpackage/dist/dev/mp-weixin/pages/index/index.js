@@ -52,16 +52,58 @@ const _sfc_main = {
       }
     }
     function handleBannerClick(banner) {
-      const url = banner.getJumpUrl();
-      if (url) {
-        common_vendor.index.navigateTo({
-          url,
-          fail: () => {
-            common_vendor.index.showToast({
-              title: "页面跳转失败",
-              icon: "none"
-            });
+      console.log("点击轮播图:", banner);
+      if (!banner) {
+        console.error("无效的轮播图数据");
+        return;
+      }
+      try {
+        if (banner.contentId) {
+          switch (banner.type) {
+            case 1:
+              common_vendor.index.navigateTo({
+                url: `/pages/venue_detail/venue_detail?id=${banner.contentId}`
+              });
+              break;
+            case 2:
+              common_vendor.index.navigateTo({
+                url: `/pages/prop_detail/prop_detail?id=${banner.contentId}`
+              });
+              break;
+            case 3:
+              common_vendor.index.navigateTo({
+                url: `/pages/note/note?id=${banner.contentId}`
+              });
+              break;
+            default:
+              console.warn("未知的轮播图类型:", banner.type);
           }
+        } else {
+          switch (banner.type) {
+            case 1:
+              common_vendor.index.navigateTo({
+                url: "/pages/venue/venue"
+              });
+              break;
+            case 2:
+              common_vendor.index.navigateTo({
+                url: "/pages/prop/prop"
+              });
+              break;
+            case 3:
+              common_vendor.index.navigateTo({
+                url: "/pages/find/find"
+              });
+              break;
+            default:
+              console.warn("未知的轮播图类型:", banner.type);
+          }
+        }
+      } catch (error) {
+        console.error("跳转失败:", error);
+        common_vendor.index.showToast({
+          title: "页面跳转失败",
+          icon: "none"
         });
       }
     }
@@ -75,14 +117,16 @@ const _sfc_main = {
       console.log("dianji");
       showQRCode.value = false;
     }
-    function navigateToProp() {
+    function navigateToProp(id) {
+      console.log(id);
       common_vendor.index.navigateTo({
-        url: "/pages/prop/prop"
+        url: `/pages/prop/prop`
       });
     }
-    function navigateToVenue() {
+    function navigateToVenue(id) {
+      console.log(id);
       common_vendor.index.navigateTo({
-        url: "/pages/venue/venue"
+        url: `/pages/venue/venue`
       });
     }
     return (_ctx, _cache) => {
@@ -93,7 +137,7 @@ const _sfc_main = {
             b: banner.text
           }, banner.text ? {
             c: common_vendor.t(banner.text),
-            d: common_vendor.t(banner.getTypeText())
+            d: common_vendor.t(banner.type === 1 ? "场地" : banner.type === 2 ? "道具" : "笔记")
           } : {}, {
             e: banner.bannerId,
             f: common_vendor.o(($event) => handleBannerClick(banner), banner.bannerId)
@@ -109,5 +153,5 @@ const _sfc_main = {
     };
   }
 };
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-1cf27b2a"], ["__file", "C:/Users/86182/Desktop/解压小程序/前端/JieYa/pages/index/index.vue"]]);
+const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-1cf27b2a"], ["__file", "C:/Users/86182/Desktop/上班/解压小程序/前端/JieYa/pages/index/index.vue"]]);
 wx.createPage(MiniProgramPage);

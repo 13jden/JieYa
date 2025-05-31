@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.wx.mapper.NodePostMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.common.pojo.NodePost">
+        <id column="id" property="id" />
+        <result column="title" property="title" />
+        <result column="content" property="content" />
+        <result column="cover_image" property="coverImage" />
+        <result column="status" property="status" />
+        <result column="tags" property="tags" />
+        <result column="post_time" property="postTime" />
+        <result column="audit_time" property="auditTime" />
+        <result column="category" property="category" />
+        <result column="user_id" property="userId" ></result>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, title, content, cover_image, status, tags, post_time, audit_time, category,userId
+    </sql>
+
+</mapper>

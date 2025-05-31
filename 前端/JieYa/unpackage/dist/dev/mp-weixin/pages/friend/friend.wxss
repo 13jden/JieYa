@@ -1,0 +1,187 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.friend-container.data-v-b7e6a9a8 {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f8f8f8;
+  display: flex;
+  flex-direction: column;
+}
+.status-bar.data-v-b7e6a9a8 {
+  height: var(--status-bar-height, 25px);
+  background-color: #ffffff;
+}
+.header.data-v-b7e6a9a8 {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  position: relative;
+  border-bottom: 1px solid #f0f0f0;
+}
+.title.data-v-b7e6a9a8 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+.message-list.data-v-b7e6a9a8 {
+  flex: 1;
+  padding: 10px 0;
+  box-sizing: border-box;
+}
+.section-title.data-v-b7e6a9a8 {
+  padding: 12px 16px 8px;
+  font-size: 14px;
+  color: #999;
+  background-color: #f8f8f8;
+}
+.message-card.data-v-b7e6a9a8 {
+  display: flex;
+  padding: 16px;
+  background-color: #ffffff;
+  position: relative;
+}
+.message-card.fixed.data-v-b7e6a9a8 {
+  background-color: rgba(26, 173, 25, 0.05);
+  border-left: 3px solid #1aad19;
+}
+.message-card.data-v-b7e6a9a8:active {
+  background-color: #f5f5f5;
+}
+.message-card.data-v-b7e6a9a8::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 68px;
+  right: 0;
+  height: 1px;
+  background-color: #f0f0f0;
+}
+.message-card.data-v-b7e6a9a8:last-child::after {
+  display: none;
+}
+.left.data-v-b7e6a9a8 {
+  margin-right: 12px;
+}
+.avatar.data-v-b7e6a9a8 {
+  width: 52px;
+  height: 52px;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+}
+.content.data-v-b7e6a9a8 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.top-row.data-v-b7e6a9a8 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.name.data-v-b7e6a9a8 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+.time.data-v-b7e6a9a8 {
+  font-size: 12px;
+  color: #999;
+}
+.bottom-row.data-v-b7e6a9a8 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+.message.data-v-b7e6a9a8 {
+  font-size: 14px;
+  color: #666;
+  max-width: 85%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.badge.data-v-b7e6a9a8 {
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background-color: #ff4d4f;
+  color: #fff;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+.empty-state.data-v-b7e6a9a8 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 0;
+}
+.empty-image.data-v-b7e6a9a8 {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 16px;
+}
+.empty-text.data-v-b7e6a9a8 {
+  color: #999;
+  font-size: 14px;
+}
+.loading-overlay.data-v-b7e6a9a8 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.loader.data-v-b7e6a9a8 {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #1aad19;
+  border-radius: 50%;
+  animation: spin-b7e6a9a8 1s linear infinite;
+  margin-bottom: 12px;
+}
+@keyframes spin-b7e6a9a8 {
+0% {
+    transform: rotate(0deg);
+}
+100% {
+    transform: rotate(360deg);
+}
+}

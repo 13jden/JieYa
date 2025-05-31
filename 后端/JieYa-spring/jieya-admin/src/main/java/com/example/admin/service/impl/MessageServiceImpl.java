@@ -8,12 +8,15 @@ import com.example.admin.service.MessageService;
 import com.example.common.adminDto.AdminMessageDto;
 import com.example.common.pojo.Message;
 import com.example.common.pojo.User;
+import com.example.common.Enum.SystemMessageEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -74,7 +77,14 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         Page<Message> page = new Page<>(pageNum, pageSize);
         // 修改为同时传入当前用户ID和对话用户ID
         String currentUser = "admin"; // 假设当前登录的是管理员
-        return messageMapper.selectUserMessageItemList(page, currentUser, userId);
+        page = messageMapper.selectUserMessageItemList(page, currentUser, userId);  
+        // 处理文件URL，添加前缀
+        for (Message message : page.getRecords()) {
+            if (message.getFileUrl() != null && !message.getFileUrl().isEmpty()) {
+                message.setFileUrl(hostUrl + "/files/message/" + message.getFileUrl());
+            }
+        }
+        return page;
     }
     @Override
     public Page<AdminMessageDto> getOrderMessage(int pageNum, int pageSize) {
@@ -135,5 +145,24 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
     @Override
     public int markAllMessagesAsRead() {
         return messageMapper.markAllMessagesAsRead();
+    }
+
+    /**
+     * 获取用户消息类型列表
+     * @return 系统消息类型列表
+     */
+    @Override
+    public List<Map<String, String>> getMessage2UserType() {
+        List<Map<String, String>> result = new ArrayList<>();
+        
+        // 遍历SystemMessageEnum中的所有枚举值
+        for (SystemMessageEnum messageType : SystemMessageEnum.values()) {
+            Map<String, String> item = new HashMap<>();
+            item.put("code", messageType.getCode());
+            item.put("description", messageType.getDescription());
+            result.add(item);
+        }
+        
+        return result;
     }
 }
